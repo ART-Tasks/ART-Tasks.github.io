@@ -2808,6 +2808,7 @@
           ${checkHtml}
           <div class="card-footer">
             <div class="card-due ${isOverdue ? 'overdue' : ''}">${t.due ? '📅 ' + formatDate(t.due) : '—'}</div>
+            ${t.commentCount ? `<div class="card-comments" style="display:flex; align-items:center; gap:4px; font-size:11px; color:var(--text3); margin-right:6px;" title="${t.commentCount} comments">💬 ${t.commentCount}</div>` : ''}
             <div class="priority-dot p-${t.priority || 'medium'}"></div>
             <div class="card-assignee a-avatar" style="background:${color.bg}; color:${color.text}; border: 1px solid ${color.border};" title="Assigned to ${member.name}">${member.name[0]}</div>
           </div>
@@ -2841,7 +2842,11 @@
         return `
           <div class="table-row" onclick="openEditModal('${t.id}')">
             <div>
-              <div class="row-title">${esc(t.title)} ${linkIconHtml}</div>
+              <div class="row-title">
+                ${esc(t.title)} 
+                ${linkIconHtml}
+                ${t.commentCount ? `<span style="font-size:11px; color:var(--text3); margin-left:8px; display:inline-flex; align-items:center; gap:3px;" title="${t.commentCount} comments">💬 ${t.commentCount}</span>` : ''}
+              </div>
               <div class="row-sub" style="display:flex; align-items:center; gap:6px; margin-top:2px;">
                 <span class="badge badge-${categoryKey}" style="font-size:9px; padding:1px 6px;">${cat.emoji} ${cat.label}</span>
               </div>
@@ -2955,12 +2960,22 @@
       if (!text) return;
 
       const myProfile = getMember(currentUser.email);
-      db.collection('tasks').doc(editingTaskId).collection('comments').add({
+      const batch = db.batch();
+      const taskRef = db.collection('tasks').doc(editingTaskId);
+      const newCommentRef = taskRef.collection('comments').doc();
+
+      batch.set(newCommentRef, {
         text: text,
         userName: myProfile.name !== '?' ? myProfile.name : currentUser.email,
         userEmail: currentUser.email,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      })
+      });
+
+      batch.update(taskRef, {
+        commentCount: firebase.firestore.FieldValue.increment(1)
+      });
+
+      batch.commit()
         .then(() => {
           input.value = '';
         })
