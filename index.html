@@ -2508,7 +2508,8 @@
         renderTeamList();
         renderAll();
 
-        if (document.getElementById('loadingScreen').classList.contains('active')) {
+        if (document.getElementById('loadingScreen').classList.contains('active') ||
+            document.getElementById('loginScreen').classList.contains('active')) {
           showScreen('appScreen');
         }
       }, (err) => {
