@@ -2166,7 +2166,7 @@
     window.signInWithGoogle = async function () {
       try {
         const provider = new firebase.auth.GoogleAuthProvider();
-        await auth.signInWithPopup(provider);
+        await auth.signInWithRedirect(provider);
       } catch (e) {
         document.getElementById('loginError').textContent = e.message;
       }
