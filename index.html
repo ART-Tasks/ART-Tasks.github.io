@@ -1603,6 +1603,105 @@
       border-radius: 50%;
       display: none;
     }
+
+    /* ── COMMENTS DISCUSSION ── */
+    .comments-section {
+      display: flex;
+      flex-direction: column;
+      background: var(--s3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 16px;
+      animation: fadeUp .25s ease;
+    }
+    .comments-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .comments-list {
+      max-height: 200px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-right: 4px;
+    }
+    .comment-bubble {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 10px 12px;
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      animation: fadeUp .2s ease;
+    }
+    .comment-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .comment-content {
+      flex: 1;
+      min-width: 0;
+    }
+    .comment-header {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+    .comment-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .comment-time {
+      font-size: 10px;
+      color: var(--text3);
+    }
+    .comment-text {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.4;
+      word-break: break-word;
+    }
+    .comment-input-wrap {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+    .comment-textarea {
+      flex: 1;
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      padding: 8px 12px;
+      height: 38px;
+      resize: none;
+      outline: none;
+      transition: border .2s;
+    }
+    .comment-textarea:focus {
+      border-color: var(--accent);
+    }
   </style>
 </head>
 
@@ -1966,6 +2065,16 @@
           <label>Move to Stage</label>
           <div class="move-row" id="moveRow"></div>
         </div>
+        
+        <!-- Live Comments Section -->
+        <div class="comments-section" id="commentsSection" style="display:none;">
+          <div class="comments-title">💬 Live Discussion</div>
+          <div class="comments-list" id="commentsList"></div>
+          <div class="comment-input-wrap">
+            <textarea class="comment-textarea" id="commentInput" placeholder="Write a comment... (Press Enter to send)" onkeydown="handleCommentKey(event)"></textarea>
+            <button class="btn-sm primary" style="height: 38px; padding: 0 16px;" onclick="sendComment()">Send</button>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn-danger" id="deleteBtn" onclick="deleteTask()" style="display:none;">Delete</button>
@@ -2049,6 +2158,7 @@
 
     let db = null;
     let auth = null;
+    let commentsUnsubscribe = null;
 
     const ROLE_COLORS = {
       'Admin': { bg: 'rgba(255,51,51,.15)', text: 'var(--accent)', border: 'rgba(255,51,51,.3)' },
@@ -2407,6 +2517,7 @@
       if (me && me.name !== '?') document.getElementById('f_assignee').value = me.name;
 
       document.getElementById('deleteBtn').style.display = 'none'; document.getElementById('moveStatusField').style.display = 'none';
+      document.getElementById('commentsSection').style.display = 'none';
       document.getElementById('taskModal').classList.add('open');
     }
 
@@ -2425,10 +2536,25 @@
       const moveField = document.getElementById('moveStatusField'), moveRow = document.getElementById('moveRow');
       moveField.style.display = 'block';
       moveRow.innerHTML = STAGES.map(s => `<button class="move-btn ${s.id === t.status ? 'current' : ''}" onclick="moveTask('${id}','${s.id}')">${s.emoji} ${s.label}</button>`).join('');
+      
+      // Comments integration
+      document.getElementById('commentsSection').style.display = 'flex';
+      document.getElementById('commentInput').value = '';
+      setupCommentsListener(id);
+
       document.getElementById('taskModal').classList.add('open');
     }
 
-    window.closeModal = function (modalId) { document.getElementById(modalId).classList.remove('open'); if (modalId === 'taskModal') editingTaskId = null; }
+    window.closeModal = function (modalId) {
+      document.getElementById(modalId).classList.remove('open');
+      if (modalId === 'taskModal') {
+        editingTaskId = null;
+        if (commentsUnsubscribe) {
+          commentsUnsubscribe();
+          commentsUnsubscribe = null;
+        }
+      }
+    }
     window.openTeamModal = function () { renderTeamList(); document.getElementById('tm_name').value = ''; document.getElementById('tm_email').value = ''; document.getElementById('teamModal').classList.add('open'); }
 
     function populateAssigneeDropdown() { document.getElementById('f_assignee').innerHTML = teamMembers.map(m => `<option value="${m.name}">${m.name} (${m.role})</option>`).join(''); }
@@ -2534,6 +2660,89 @@
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }), url = URL.createObjectURL(blob), link = document.createElement("a");
       link.setAttribute("href", url); link.setAttribute("download", "ART_Content_Tasks.csv"); document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
+
+    // ═══════════════════════════════════════════
+    // LIVE COMMENTS FUNCTIONALITY
+    // ═══════════════════════════════════════════
+    function setupCommentsListener(taskId) {
+      if (commentsUnsubscribe) {
+        commentsUnsubscribe();
+        commentsUnsubscribe = null;
+      }
+      
+      const listDiv = document.getElementById('commentsList');
+      listDiv.innerHTML = '<div style="color:var(--text3); font-size:12px; text-align:center; padding:12px;">Loading discussion...</div>';
+      
+      commentsUnsubscribe = db.collection('tasks').doc(taskId).collection('comments')
+        .orderBy('timestamp', 'asc')
+        .onSnapshot((snapshot) => {
+          if (snapshot.empty) {
+            listDiv.innerHTML = '<div style="color:var(--text3); font-size:12px; text-align:center; padding:24px 0;">No comments yet. Start the discussion!</div>';
+            return;
+          }
+          
+          listDiv.innerHTML = snapshot.docs.map(doc => {
+            const c = doc.data();
+            const member = getMember(c.userEmail || c.userName);
+            const color = getMemberColor(member.role);
+            const initial = (member.name ? member.name[0] : '?').toUpperCase();
+            
+            let timeStr = 'Just now';
+            if (c.timestamp) {
+              const date = c.timestamp.toDate ? c.timestamp.toDate() : new Date(c.timestamp);
+              timeStr = date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) + ', ' + date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+            }
+            
+            return `
+              <div class="comment-bubble">
+                <div class="comment-avatar" style="background:${color.bg}; color:${color.text}; border: 1px solid ${color.border};">${initial}</div>
+                <div class="comment-content">
+                  <div class="comment-header">
+                    <span class="comment-name">${esc(member.name)}</span>
+                    <span class="comment-time">${timeStr}</span>
+                  </div>
+                  <div class="comment-text">${esc(c.text)}</div>
+                </div>
+              </div>
+            `;
+          }).join('');
+          
+          // Auto-scroll to the bottom of comments
+          setTimeout(() => { listDiv.scrollTop = listDiv.scrollHeight; }, 50);
+        }, (err) => {
+          console.error("Error listening to comments:", err);
+          listDiv.innerHTML = '<div style="color:var(--accent); font-size:12px; text-align:center; padding:12px;">Error loading comments</div>';
+        });
+    }
+
+    window.sendComment = function () {
+      if (!db || !editingTaskId) return;
+      const input = document.getElementById('commentInput');
+      const text = input.value.trim();
+      if (!text) return;
+      
+      const myProfile = getMember(currentUser.email);
+      db.collection('tasks').doc(editingTaskId).collection('comments').add({
+        text: text,
+        userName: myProfile.name !== '?' ? myProfile.name : currentUser.email,
+        userEmail: currentUser.email,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      })
+      .then(() => {
+        input.value = '';
+      })
+      .catch(e => {
+        console.error(e);
+        showToast("Failed to post comment", "error");
+      });
+    };
+
+    window.handleCommentKey = function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        window.sendComment();
+      }
+    };
 
     document.querySelectorAll('.modal-backdrop').forEach(m => { m.addEventListener('click', function (e) { if (e.target === this) window.closeModal(this.id); }); });
     document.addEventListener('keydown', e => {
