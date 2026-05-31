@@ -1769,6 +1769,37 @@
     .comment-textarea:focus {
       border-color: var(--accent);
     }
+
+    /* ── INLINE TEAM ACCESS MANAGEMENT ── */
+    .inline-team-row {
+      display: grid;
+      grid-template-columns: auto 1fr 1fr 150px 100px;
+      gap: 16px;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--s3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .inline-team-row:hover {
+      border-color: var(--s4);
+    }
+    .inline-edit-input {
+      background: transparent !important;
+      border: 1px solid transparent !important;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text);
+      padding: 6px 8px;
+      border-radius: 6px;
+      transition: border-color 0.15s, background-color 0.15s;
+    }
+    .inline-edit-input:focus {
+      border-color: var(--accent) !important;
+      background: var(--s2) !important;
+      outline: none;
+    }
   </style>
 </head>
 
@@ -1997,6 +2028,41 @@
                 <div class="assignee-list" id="teamList"></div>
               </div>
             </div>
+
+            <!-- Admin-Only Team & Access Management Section -->
+            <div class="dash-section" id="adminTeamSection" style="margin-top: 20px; display: none;">
+              <div class="dash-section-title">
+                <span>👥 Team & Access Management</span>
+              </div>
+              
+              <!-- Add Member Form -->
+              <div class="team-add-inline" style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; margin-bottom: 20px; align-items: end; background: var(--s3); padding: 14px; border-radius: 10px; border: 1px solid var(--border);">
+                <div class="field">
+                  <label style="font-size: 10px; margin-bottom: 4px;">Full Name</label>
+                  <input type="text" id="inline_tm_name" placeholder="e.g. Ashish" style="height: 36px; padding: 6px 12px;" />
+                </div>
+                <div class="field">
+                  <label style="font-size: 10px; margin-bottom: 4px;">Email Address</label>
+                  <input type="email" id="inline_tm_email" placeholder="e.g. ashish@domain.com" style="height: 36px; padding: 6px 12px;" />
+                </div>
+                <div class="field">
+                  <label style="font-size: 10px; margin-bottom: 4px;">Role</label>
+                  <select id="inline_tm_role" style="height: 36px; padding: 6px 12px;">
+                    <option value="Admin">Admin</option>
+                    <option value="Video Editor">Video Editor</option>
+                    <option value="Content Writer">Content Writer</option>
+                    <option value="Reviewer">Reviewer</option>
+                  </select>
+                </div>
+                <button class="btn-save" style="height: 36px; padding: 0 16px; font-weight: 500;" onclick="inlineAddTeamMember()">Add Member</button>
+              </div>
+
+              <!-- Team Members Table / Grid -->
+              <div id="inlineTeamTable" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Populated dynamically via JS -->
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -2541,7 +2607,9 @@
       document.getElementById('sidebarAvatar').style.background = color.bg;
       document.getElementById('sidebarAvatar').style.color = color.text;
 
-      document.getElementById('btnManageTeam').style.display = (myProfile.role === 'Admin') ? 'block' : 'none';
+      const isAdmin = myProfile.role === 'Admin';
+      document.getElementById('btnManageTeam').style.display = isAdmin ? 'block' : 'none';
+      document.getElementById('adminTeamSection').style.display = isAdmin ? 'block' : 'none';
     }
 
     // ═══════════════════════════════════════════
@@ -2620,6 +2688,58 @@
         .then(() => showToast('Member removed', 'success'))
         .catch(e => console.error(e));
     }
+
+    window.updateInlineTeamMember = function (id, name, role) {
+      if (!db) return;
+      const cleanName = name.trim();
+      if (!cleanName) { showToast('Name cannot be empty', 'error'); renderInlineTeamManagement(); return; }
+
+      // Protect primary admin from role downgrades or demotions
+      const member = teamMembers.find(m => m.id === id);
+      if (member && member.email === 'yashuvadje@gmail.com' && role !== 'Admin') {
+        showToast('The primary admin must remain an Admin!', 'error');
+        renderAll();
+        return;
+      }
+
+      db.collection('teamMembers').doc(id).update({ name: cleanName, role: role })
+        .then(() => showToast('Team member updated ✓', 'success'))
+        .catch(e => { console.error(e); showToast('Error updating member', 'error'); });
+    };
+
+    window.inlineAddTeamMember = function () {
+      if (!db) return;
+      const name = document.getElementById('inline_tm_name').value.trim();
+      const email = document.getElementById('inline_tm_email').value.trim();
+      const role = document.getElementById('inline_tm_role').value;
+
+      if (!name || !email) { showToast('Name and Email are required', 'error'); return; }
+      if (teamMembers.find(m => m.email === email)) { showToast('User with this email already exists', 'error'); return; }
+
+      db.collection('teamMembers').add({ name, email, role })
+        .then(() => {
+          showToast(`${name} added to team`, 'success');
+          document.getElementById('inline_tm_name').value = '';
+          document.getElementById('inline_tm_email').value = '';
+        })
+        .catch(e => console.error(e));
+    };
+
+    window.removeInlineTeamMember = function (id, name) {
+      if (!db) return;
+      
+      const member = teamMembers.find(m => m.id === id);
+      if (member && member.email === 'yashuvadje@gmail.com') {
+        showToast('The primary admin cannot be removed!', 'error');
+        return;
+      }
+
+      if (!confirm(`Remove ${name} from the team?`)) return;
+      
+      db.collection('teamMembers').doc(id).delete()
+        .then(() => showToast('Member removed', 'success'))
+        .catch(e => console.error(e));
+    };
 
     // ═══════════════════════════════════════════
     // DRAG AND DROP
@@ -2731,7 +2851,45 @@
     window.handleSearch = function () { searchQuery = document.getElementById('globalSearch').value.toLowerCase().trim(); renderAll(); }
     function getSearchedTasks() { if (!searchQuery) return tasks; return tasks.filter(t => (t.title && t.title.toLowerCase().includes(searchQuery)) || (t.clipId && t.clipId.toLowerCase().includes(searchQuery))); }
 
-    function renderAll() { renderDashboard(); renderKanban(); renderTasksTable(); renderCalendar(); updateBadges(); }
+    function renderAll() { renderDashboard(); renderKanban(); renderTasksTable(); renderCalendar(); updateBadges(); renderInlineTeamManagement(); }
+
+    function renderInlineTeamManagement() {
+      const container = document.getElementById('inlineTeamTable');
+      if (!container) return;
+
+      const myProfile = getMember(currentUser.email);
+      if (myProfile.role !== 'Admin') return; // Double-guard security check
+
+      container.innerHTML = teamMembers.map(m => {
+        const c = getMemberColor(m.role);
+        const isPrimaryAdmin = m.email === 'yashuvadje@gmail.com';
+        
+        return `
+          <div class="inline-team-row">
+            <div class="a-avatar" style="background:${c.bg}; color:${c.text}; width: 32px; height: 32px; font-size: 12px; font-weight: 700;">${m.name[0]}</div>
+            <div>
+              <input type="text" class="inline-edit-input" value="${esc(m.name)}" onblur="updateInlineTeamMember('${m.id}', this.value, '${m.role}')" onkeydown="if(event.key === 'Enter') this.blur()" title="Click to rename" />
+            </div>
+            <div style="font-size: 13px; color: var(--text2);">${esc(m.email)}</div>
+            <div>
+              <select class="inline-edit-input" style="width: 100%; cursor: pointer;" onchange="updateInlineTeamMember('${m.id}', '${esc(m.name)}', this.value)" ${isPrimaryAdmin ? 'disabled' : ''}>
+                <option value="Admin" ${m.role === 'Admin' ? 'selected' : ''}>Admin</option>
+                <option value="Video Editor" ${m.role === 'Video Editor' ? 'selected' : ''}>Video Editor</option>
+                <option value="Content Writer" ${m.role === 'Content Writer' ? 'selected' : ''}>Content Writer</option>
+                <option value="Reviewer" ${m.role === 'Reviewer' ? 'selected' : ''}>Reviewer</option>
+              </select>
+            </div>
+            <div style="text-align: right;">
+              ${isPrimaryAdmin ? '<span style="font-size: 11px; color: var(--text3); font-weight: 500;">Owner</span>' : `
+                <button class="btn-sm" style="color:var(--accent); border-color:rgba(255,51,51,0.2); height: 28px; padding: 0 10px;" onclick="removeInlineTeamMember('${m.id}', '${esc(m.name)}')">
+                  Remove
+                </button>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
 
     function renderDashboard() {
       const displayTasks = getSearchedTasks();
