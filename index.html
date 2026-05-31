@@ -2392,7 +2392,8 @@
     window.signInWithGoogle = async function () {
       try {
         const provider = new firebase.auth.GoogleAuthProvider();
-        await auth.signInWithRedirect(provider);
+        // Popup is restored because Redirect session states can be blocked by Chrome cookie sandboxes on subfolder sites
+        await auth.signInWithPopup(provider);
       } catch (e) {
         document.getElementById('loginError').textContent = e.message;
       }
