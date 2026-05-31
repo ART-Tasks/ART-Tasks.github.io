@@ -9,7 +9,6 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
   <link
     href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap"
@@ -483,14 +482,9 @@
         </div>
 
         <div class="field">
-          <label>Resume / CV <span class="required">*</span></label>
-          <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('app_resume').click();">
-            <div class="file-upload-icon"></div>
-            <div class="file-upload-text">Click to upload or drag & drop</div>
-            <div class="file-upload-hint">PDF or DOCX — Max 5MB</div>
-            <div class="file-upload-name" id="fileName"></div>
-          </div>
-          <input type="file" id="app_resume" class="file-input-hidden" accept=".pdf,.doc,.docx" />
+          <label>Resume Link (Google Drive, Dropbox, Notion, etc.) <span class="required">*</span></label>
+          <input type="url" id="app_resume_link" placeholder="https://drive.google.com/file/d/... or sharing URL" required />
+          <div style="font-size: 11px; color: var(--text3); margin-top: 6px;">Please make sure the link access is set to public ("Anyone with the link can view") so our team can access it.</div>
         </div>
 
         <div class="field">
@@ -537,60 +531,6 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    const storage = firebase.storage();
-
-    // ═══════════════════════════════════════════
-    // FILE UPLOAD HANDLING
-    // ═══════════════════════════════════════════
-    let selectedFile = null;
-
-    const fileInput = document.getElementById('app_resume');
-    const fileArea = document.getElementById('fileUploadArea');
-    const fileNameDiv = document.getElementById('fileName');
-
-    fileInput.addEventListener('change', (e) => {
-      handleFileSelect(e.target.files[0]);
-    });
-
-    // Drag & Drop
-    fileArea.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      fileArea.classList.add('dragover');
-    });
-    fileArea.addEventListener('dragleave', () => {
-      fileArea.classList.remove('dragover');
-    });
-    fileArea.addEventListener('drop', (e) => {
-      e.preventDefault();
-      fileArea.classList.remove('dragover');
-      if (e.dataTransfer.files.length) {
-        handleFileSelect(e.dataTransfer.files[0]);
-      }
-    });
-
-    function handleFileSelect(file) {
-      const errDiv = document.getElementById('formError');
-      errDiv.textContent = '';
-
-      if (!file) return;
-
-      // Validate type
-      const allowed = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-      if (!allowed.includes(file.type)) {
-        errDiv.textContent = 'Please upload a PDF or Word document.';
-        return;
-      }
-
-      // Validate size (5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        errDiv.textContent = 'File size must be less than 5MB.';
-        return;
-      }
-
-      selectedFile = file;
-      fileNameDiv.textContent = '📎 ' + file.name + ' (' + (file.size / (1024 * 1024)).toFixed(2) + ' MB)';
-      fileArea.classList.add('has-file');
-    }
 
     // ═══════════════════════════════════════════
     // SUBMIT APPLICATION
@@ -606,10 +546,11 @@
       const mobile = document.getElementById('app_mobile').value.trim();
       const position = document.getElementById('app_position').value;
       const portfolio = document.getElementById('app_portfolio').value.trim();
+      const resumeLink = document.getElementById('app_resume_link').value.trim();
       const coverLetter = document.getElementById('app_cover').value.trim();
 
       // Validate
-      if (!name || !email || !mobile || !position) {
+      if (!name || !email || !mobile || !position || !resumeLink) {
         errDiv.textContent = 'Please fill in all required fields.';
         return;
       }
@@ -621,8 +562,9 @@
         return;
       }
 
-      if (!selectedFile) {
-        errDiv.textContent = 'Please upload your resume.';
+      // Simple URL validation for resume link
+      if (!resumeLink.startsWith('http://') && !resumeLink.startsWith('https://')) {
+        errDiv.textContent = 'Please enter a valid URL for your resume link (starting with http:// or https://).';
         return;
       }
 
@@ -631,24 +573,15 @@
       btn.classList.add('loading');
 
       try {
-        // 1. Upload resume to Firebase Storage
-        const timestamp = Date.now();
-        const safeFileName = selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-        const storagePath = `resumes/${timestamp}_${safeFileName}`;
-        const storageRef = storage.ref(storagePath);
-
-        const uploadSnap = await storageRef.put(selectedFile);
-        const resumeUrl = await uploadSnap.ref.getDownloadURL();
-
-        // 2. Save application to Firestore
+        // Save application directly to Firestore with the text link
         await db.collection('applications').add({
           name: name,
           email: email,
           mobile: mobile,
           position: position,
           portfolio: portfolio || '',
-          resumeUrl: resumeUrl,
-          resumeName: selectedFile.name,
+          resumeUrl: resumeLink,
+          resumeName: 'External Link',
           coverLetter: coverLetter || '',
           status: 'new',
           starred: false,
@@ -657,7 +590,7 @@
           commentCount: 0
         });
 
-        // 3. Show success
+        // Show success
         document.getElementById('formCard').style.display = 'none';
         document.getElementById('successState').classList.add('active');
 

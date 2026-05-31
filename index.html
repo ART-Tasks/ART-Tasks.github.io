@@ -8,7 +8,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
   <script>
     // Prevent FOUC (Flash of Unstyled Content) by setting theme immediately
     const savedTheme = localStorage.getItem('art_theme') || 'dark';
@@ -2903,7 +2902,7 @@
 
         db = firebase.firestore();
         auth = firebase.auth();
-        storage = firebase.storage();
+        if (typeof firebase.storage === 'function') storage = firebase.storage();
 
         auth.onAuthStateChanged(user => {
           if (user) {
@@ -3781,7 +3780,7 @@
           </div>
         </div>
 
-        ${a.resumeUrl ? `<div style="margin-bottom:16px;"><a href="${esc(a.resumeUrl)}" target="_blank" class="btn-sm primary" style="display:inline-flex; gap:6px;">📎 Download Resume (${esc(a.resumeName || 'File')})</a></div>` : ''}
+        ${a.resumeUrl ? `<div style="margin-bottom:16px;"><a href="${esc(a.resumeUrl)}" target="_blank" class="btn-sm primary" style="display:inline-flex; gap:6px;">📎 Open Resume Link</a></div>` : ''}
 
         ${a.coverLetter ? `<div class="field" style="margin-bottom:0;"><label>Cover Letter / Why ART?</label></div><div class="applicant-cover-letter">${esc(a.coverLetter)}</div>` : ''}
 
