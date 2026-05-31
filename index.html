@@ -2499,6 +2499,12 @@
                 <button class="filter-btn" onclick="filterHiring('starred',this)">⭐ Starred</button>
               </div>
               <div class="hiring-actions">
+                <button class="btn-sm" style="border-color: rgba(34, 197, 94, 0.3); color: var(--green);" onclick="seedDummyApplicants()" title="Add 5 beautiful mock candidate entries for testing">
+                  🌱 Seed Dummy Data
+                </button>
+                <button class="btn-sm primary" onclick="openAddCandidateModal()" title="Add a candidate manually">
+                  ➕ Add Candidate
+                </button>
                 <button class="copy-link-btn" onclick="copyCareerLink()" title="Copy public careers page link">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
@@ -2560,6 +2566,76 @@
       <div class="modal-footer">
         <button class="btn-danger" id="deleteApplicantBtn" onclick="deleteApplicant()" style="display:none;">Delete Application</button>
         <button class="btn-cancel" onclick="closeModal('applicantModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ ADD CANDIDATE MODAL ═══════════ -->
+  <div class="modal-backdrop" id="addCandidateModal">
+    <div class="modal" style="max-width: 580px;">
+      <div class="modal-header">
+        <div class="modal-title">Manually Add Candidate</div>
+        <button class="modal-close" onclick="closeModal('addCandidateModal')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="field-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div class="field">
+            <label>Full Name</label>
+            <input type="text" id="ac_name" placeholder="e.g. Rahul Sharma" />
+          </div>
+          <div class="field">
+            <label>Email Address</label>
+            <input type="email" id="ac_email" placeholder="e.g. rahul@domain.com" />
+          </div>
+        </div>
+        <div class="field-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div class="field">
+            <label>Mobile Number</label>
+            <input type="tel" id="ac_mobile" placeholder="e.g. +91 98765 43210" />
+          </div>
+          <div class="field">
+            <label>Position</label>
+            <select id="ac_position">
+              <option value="Video Editor">🎬 Video Editor</option>
+              <option value="Content Writer">✍️ Content Writer</option>
+              <option value="Graphic Designer">🎨 Graphic Designer</option>
+              <option value="Social Media Manager">📱 Social Media Manager</option>
+              <option value="Reviewer">👁️ Reviewer</option>
+              <option value="Other">🔧 Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom: 12px;">
+          <label>Portfolio / LinkedIn URL</label>
+          <input type="url" id="ac_portfolio" placeholder="https://linkedin.com/in/rahul" />
+        </div>
+        <div class="field" style="margin-bottom: 12px;">
+          <label>Resume sharing link</label>
+          <input type="url" id="ac_resume_link" placeholder="Google Drive, Dropbox link etc." />
+        </div>
+        <div class="field" style="margin-bottom: 12px;">
+          <label>Cover Letter / Notes</label>
+          <textarea id="ac_cover" placeholder="Cover letter text or reference notes..." style="min-height: 80px; resize: vertical; background: var(--s2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 10px; outline: none; width: 100%; font-family: inherit;"></textarea>
+        </div>
+        <div class="field">
+          <label>Initial Status</label>
+          <select id="ac_status">
+            <option value="new">🔵 New</option>
+            <option value="reviewed">🟡 Reviewed</option>
+            <option value="shortlisted">🟢 Shortlisted</option>
+            <option value="rejected">🔴 Rejected</option>
+            <option value="hired">🟣 Hired</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-sm primary" onclick="saveManualCandidate()">Save Candidate</button>
+        <button class="btn-cancel" onclick="closeModal('addCandidateModal')">Cancel</button>
       </div>
     </div>
   </div>
@@ -3935,6 +4011,186 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    };
+
+    window.seedDummyApplicants = async function () {
+      if (!db) return;
+      if (!confirm("Seed 5 beautiful mock candidates into your Firestore database for testing?")) return;
+
+      const dummyCandidates = [
+        {
+          name: "Rohit Verma",
+          email: "rohit.editor@gmail.com",
+          mobile: "+91 98989 12345",
+          position: "Video Editor",
+          portfolio: "https://behance.net/rohitverma",
+          resumeUrl: "https://drive.google.com/file/d/1_rohit_verma_resume/view",
+          resumeName: "External Link",
+          coverLetter: "Hey! I have 4+ years of editing fast-paced YouTube videos, specializing in motion graphics and sound design in Premiere Pro and After Effects. Would love to join the ART crew!",
+          status: "shortlisted",
+          starred: true,
+          appliedAt: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(), // 3 days ago
+          comments: [
+            {
+              userName: "Yash",
+              userEmail: "yashuvadje@gmail.com",
+              text: "His portfolio has some extremely high retention edits. Shortlisting immediately for interview.",
+              timestamp: new Date(Date.now() - 2.5 * 24 * 3600 * 1000).toISOString()
+            }
+          ],
+          commentCount: 1
+        },
+        {
+          name: "Aanya Sen",
+          email: "aanya.writes@yahoo.com",
+          mobile: "+91 87654 32109",
+          position: "Content Writer",
+          portfolio: "https://medium.com/@aanyasen",
+          resumeUrl: "https://drive.google.com/file/d/1_aanya_sen_resume/view",
+          resumeName: "External Link",
+          coverLetter: "I write script hooks that keep viewers hooked for the first 30 seconds. Over 2 years of experience creating highly researched scripts for finance and tech YouTube channels.",
+          status: "new",
+          starred: false,
+          appliedAt: new Date().toISOString(), // Just now
+          comments: [],
+          commentCount: 0
+        },
+        {
+          name: "Vikram Malhotra",
+          email: "vikram.designer@outlook.com",
+          mobile: "+91 99988 77665",
+          position: "Graphic Designer",
+          portfolio: "https://dribbble.com/vikramdesigns",
+          resumeUrl: "https://drive.google.com/file/d/1_vikram_malhotra_resume/view",
+          resumeName: "External Link",
+          coverLetter: "Hello, I make CTR-boosting thumbnails and social media banner templates. Skilled in Photoshop, Illustrator, and Figma. Check out my CTR stats in my portfolio link!",
+          status: "reviewed",
+          starred: true,
+          appliedAt: new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString(), // 1 day ago
+          comments: [],
+          commentCount: 0
+        },
+        {
+          name: "Priyanka Joshi",
+          email: "priyanka.social@gmail.com",
+          mobile: "+91 91234 56789",
+          position: "Social Media Manager",
+          portfolio: "https://linkedin.com/in/priyankajoshi",
+          resumeUrl: "https://drive.google.com/file/d/1_priyanka_joshi_resume/view",
+          resumeName: "External Link",
+          coverLetter: "Passionate about building online communities. Managed social growth for two creators, boosting average engagement rate by 35% in 6 months using short-form video strategies.",
+          status: "rejected",
+          starred: false,
+          appliedAt: new Date(Date.now() - 5 * 24 * 3600 * 1000).toISOString(), // 5 days ago
+          comments: [
+            {
+              userName: "Yash",
+              userEmail: "yashuvadje@gmail.com",
+              text: "Mainly has experience with corporate pages. Looking for someone with creator-economy focus.",
+              timestamp: new Date(Date.now() - 4 * 24 * 3600 * 1000).toISOString()
+            }
+          ],
+          commentCount: 1
+        },
+        {
+          name: "Abhishek Nair",
+          email: "abhishek.nair@gmail.com",
+          mobile: "+91 95555 44444",
+          position: "Video Editor",
+          portfolio: "https://youtube.com/playlist?list=abhishek",
+          resumeUrl: "https://drive.google.com/file/d/1_abhishek_nair_resume/view",
+          resumeName: "External Link",
+          coverLetter: "Pro editor with 5+ years of documentary-style storytelling experience. I can do advanced audio sweetening, cinematic color grades, and visual graphics.",
+          status: "hired",
+          starred: false,
+          appliedAt: new Date(Date.now() - 10 * 24 * 3600 * 1000).toISOString(), // 10 days ago
+          comments: [
+            {
+              userName: "Yash",
+              userEmail: "yashuvadje@gmail.com",
+              text: "Interview went exceptionally well. Offeree accepted. Hired!",
+              timestamp: new Date(Date.now() - 8 * 24 * 3600 * 1000).toISOString()
+            }
+          ],
+          commentCount: 1
+        }
+      ];
+
+      try {
+        let count = 0;
+        for (const candidate of dummyCandidates) {
+          await db.collection('applications').add(candidate);
+          count++;
+        }
+        showToast(`Successfully seeded ${count} dummy applicants! 🌱`, 'success');
+      } catch (e) {
+        console.error(e);
+        showToast("Error seeding dummy applicants: " + e.message, "error");
+      }
+    };
+
+    window.openAddCandidateModal = function () {
+      document.getElementById('ac_name').value = '';
+      document.getElementById('ac_email').value = '';
+      document.getElementById('ac_mobile').value = '';
+      document.getElementById('ac_position').value = 'Video Editor';
+      document.getElementById('ac_portfolio').value = '';
+      document.getElementById('ac_resume_link').value = '';
+      document.getElementById('ac_cover').value = '';
+      document.getElementById('ac_status').value = 'new';
+      document.getElementById('addCandidateModal').classList.add('open');
+    };
+
+    window.saveManualCandidate = async function () {
+      if (!db) return;
+      const name = document.getElementById('ac_name').value.trim();
+      const email = document.getElementById('ac_email').value.trim();
+      const mobile = document.getElementById('ac_mobile').value.trim();
+      const position = document.getElementById('ac_position').value;
+      const portfolio = document.getElementById('ac_portfolio').value.trim();
+      const resumeLink = document.getElementById('ac_resume_link').value.trim();
+      const coverLetter = document.getElementById('ac_cover').value.trim();
+      const status = document.getElementById('ac_status').value;
+
+      if (!name || !email || !mobile || !resumeLink) {
+        showToast("Please fill in Name, Email, Mobile, and Resume Link!", "error");
+        return;
+      }
+
+      // Basic validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showToast("Please enter a valid email address.", "error");
+        return;
+      }
+      if (!resumeLink.startsWith('http://') && !resumeLink.startsWith('https://')) {
+        showToast("Resume Link must start with http:// or https://", "error");
+        return;
+      }
+
+      try {
+        await db.collection('applications').add({
+          name: name,
+          email: email,
+          mobile: mobile,
+          position: position,
+          portfolio: portfolio || '',
+          resumeUrl: resumeLink,
+          resumeName: 'External Link',
+          coverLetter: coverLetter || '',
+          status: status,
+          starred: false,
+          appliedAt: new Date().toISOString(),
+          comments: [],
+          commentCount: 0
+        });
+
+        showToast(`Candidate ${name} added successfully! ➕`, 'success');
+        window.closeModal('addCandidateModal');
+      } catch (e) {
+        console.error(e);
+        showToast("Error adding candidate: " + e.message, "error");
+      }
     };
 
     document.querySelectorAll('.modal-backdrop').forEach(m => { m.addEventListener('click', function (e) { if (e.target === this) window.closeModal(this.id); }); });
