@@ -1950,21 +1950,6 @@
         </div>
       </div>
 
-      <!-- Rules Warning Banner (Hidden by default) -->
-      <div id="rulesWarningBanner"
-        style="display:none; align-items:center; gap:12px; background:rgba(255, 51, 51, 0.08); border: 1px solid rgba(255, 51, 51, 0.2); border-radius: 8px; padding: 12px 16px; margin: 16px 24px 8px 24px; font-size: 13px; color: var(--accent); line-height: 1.5; animation: fadeUp .25s ease;">
-        <span style="font-size: 16px;">⚠️</span>
-        <div style="flex:1;">
-          <strong>Firestore Security Rules Issue Detected:</strong> Read/write access to your database is restricted.
-          Please update your Rules in the Firebase Console to allow authenticated access. <a
-            href="https://console.firebase.google.com/" target="_blank"
-            style="color:var(--text); text-decoration:underline; font-weight:600; margin-left:4px;">Open Firebase
-            Console</a>
-        </div>
-        <button onclick="document.getElementById('rulesWarningBanner').style.display='none'"
-          style="background:none; border:none; color:var(--text3); cursor:pointer; font-weight:bold; font-size:14px; padding:4px;">✕</button>
-      </div>
-
       <div class="content">
         <!-- Dashboard -->
         <div id="dashboardPage" class="page active">
@@ -2417,29 +2402,12 @@
         db = firebase.firestore();
         auth = firebase.auth();
 
-        // Check protocol/host environment
-        checkEnvironment();
-
-        // Handle redirect result if user was redirected back from Google
-        auth.getRedirectResult().then(result => {
-          if (result && result.user) {
-            console.log("Logged in via Redirect successful:", result.user);
-          }
-        }).catch(e => {
-          console.error("Redirect Sign-in error:", e);
-          document.getElementById('loginError').textContent = `Redirect sign-in failed: ${e.message}`;
-          showScreen('loginScreen');
-        });
-
-        auth.onAuthStateChanged(async user => {
+        auth.onAuthStateChanged(user => {
           if (user) {
             currentUser = user;
-            await ensureUserRegistered(currentUser);
             setupFirestoreListeners();
           } else {
             showScreen('loginScreen');
-            // Re-check on sign out to ensure correct state
-            checkEnvironment();
           }
         });
       } catch (e) {
@@ -2448,107 +2416,13 @@
       }
     }
 
-    function checkEnvironment() {
-      const errDiv = document.getElementById('loginError');
-      if (window.location.protocol === 'file:') {
-        errDiv.innerHTML = `
-          <div style="background:rgba(255, 51, 51, 0.08); border: 1px solid rgba(255, 51, 51, 0.2); padding:12px; border-radius:8px; text-align:left; color:var(--accent); font-size:12px; line-height:1.5; margin-bottom:16px;">
-            <strong>⚠️ Local File Mode (file://)</strong><br>
-            Firebase Auth and Google Sign-In do not support opening HTML files directly. To test login, you must either:
-            <ul style="margin: 6px 0 0 16px; padding:0; color:var(--text2);">
-              <li>Run a local server (e.g. VS Code **Live Server** extension)</li>
-              <li>Deploy this file to **GitHub Pages**</li>
-            </ul>
-          </div>
-        `;
-        // Disable sign in buttons visually
-        document.querySelectorAll('.btn-google, .btn-form button').forEach(btn => {
-          btn.style.opacity = '0.5';
-          btn.style.cursor = 'not-allowed';
-          btn.disabled = true;
-          // Remove click handler attributes to prevent clicks
-          btn.removeAttribute('onclick');
-        });
-        return false;
-      }
-      
-      if (window.location.hostname.endsWith('.github.io')) {
-        const existingReminder = document.getElementById('githubDomainReminder');
-        if (!existingReminder) {
-          const reminder = document.createElement('div');
-          reminder.id = 'githubDomainReminder';
-          reminder.style.cssText = "margin-top:16px; padding:12px; font-size:11px; color:var(--text3); background:var(--s3); border:1px solid var(--border); border-radius:8px; text-align:left; line-height:1.5; animation: fadeUp .2s ease;";
-          reminder.innerHTML = `
-            <strong style="color:var(--text2);">🚀 GitHub Pages Checklist:</strong><br>
-            Ensure <code>${window.location.hostname}</code> is in your **Firebase Console > Authentication > Settings > Authorized domains** list, or Google Sign-In will fail.
-          `;
-          document.querySelector('.login-card').appendChild(reminder);
-        }
-      }
-      return true;
-    }
-
-    async function ensureUserRegistered(user) {
-      if (!user || !user.email) return;
-      const email = user.email;
-      const defaultName = user.displayName || email.split('@')[0];
-      const cleanName = defaultName.charAt(0).toUpperCase() + defaultName.slice(1);
-
-      try {
-        const teamRef = db.collection('teamMembers');
-        const snap = await teamRef.where('email', '==', email).get();
-        if (snap.empty) {
-          const allMembersSnap = await teamRef.get();
-          const role = allMembersSnap.empty ? 'Admin' : 'Video Editor';
-          await teamRef.add({
-            name: cleanName,
-            email: email,
-            role: role
-          });
-          showToast(`Registered as ${role}!`, 'success');
-        }
-      } catch (e) {
-        console.error("Error ensuring user registration in teamMembers:", e);
-      }
-    }
-
     window.signInWithGoogle = async function () {
-      if (!checkEnvironment()) return;
-      const errDiv = document.getElementById('loginError');
-      errDiv.textContent = 'Opening Google Sign-In...';
-      
       try {
         const provider = new firebase.auth.GoogleAuthProvider();
-        
-        // Race the popup against a 4.5 second timeout to catch COOP hangs
-        await Promise.race([
-          auth.signInWithPopup(provider),
-          new Promise((_, reject) => setTimeout(() => reject(new Error("COOP_HANG_TIMEOUT")), 4500))
-        ]);
-        
+        // Popup is restored because Redirect session states can be blocked by Chrome cookie sandboxes on subfolder sites
+        await auth.signInWithPopup(provider);
       } catch (e) {
-        if (e.message === "COOP_HANG_TIMEOUT" || e.code === "auth/popup-blocked" || e.code === "auth/cancelled-popup-request") {
-          console.warn("Popup blocked or hung (likely due to COOP/popups). Falling back to Redirect flow...", e);
-          errDiv.textContent = 'Redirecting to Google Sign-In...';
-          try {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            await auth.signInWithRedirect(provider);
-          } catch (redirErr) {
-            console.error("Google Sign-In Redirect also failed:", redirErr);
-            if (redirErr.code === 'auth/operation-not-allowed') {
-              errDiv.innerHTML = `<strong>Google Sign-In is disabled!</strong><br>Enable it in your <em>Firebase Console &gt; Authentication &gt; Sign-in method</em>.`;
-            } else {
-              errDiv.textContent = `Google Login failed. Try Email/Password login: ${redirErr.message}`;
-            }
-          }
-        } else {
-          console.error("Google Sign-In Popup failed:", e);
-          if (e.code === 'auth/operation-not-allowed') {
-            errDiv.innerHTML = `<strong>Google Sign-In is disabled!</strong><br>Enable it in your <em>Firebase Console &gt; Authentication &gt; Sign-in method</em>.`;
-          } else {
-            errDiv.textContent = `Google Login failed: ${e.message}`;
-          }
-        }
+        document.getElementById('loginError').textContent = e.message;
       }
     };
 
@@ -2567,11 +2441,7 @@
         await auth.signInWithEmailAndPassword(email, password);
       } catch (e) {
         console.error(e);
-        if (e.code === 'auth/operation-not-allowed') {
-          errDiv.innerHTML = `<strong>Email/Password Sign-In is disabled!</strong><br>Enable it in your <em>Firebase Console &gt; Authentication &gt; Sign-in method</em>.`;
-        } else {
-          errDiv.textContent = e.message;
-        }
+        errDiv.textContent = e.message;
       }
     };
 
@@ -2611,11 +2481,7 @@
         }
       } catch (e) {
         console.error(e);
-        if (e.code === 'auth/operation-not-allowed') {
-          errDiv.innerHTML = `<strong>Email/Password Sign-In is disabled!</strong><br>Enable it in your <em>Firebase Console &gt; Authentication &gt; Sign-in method</em>.`;
-        } else {
-          errDiv.textContent = e.message;
-        }
+        errDiv.textContent = e.message;
       }
     };
 
@@ -2648,13 +2514,6 @@
       }, (err) => {
         console.error(err);
         showToast("Check Firestore Rules: Read access denied", "error");
-
-        const banner = document.getElementById('rulesWarningBanner');
-        if (banner) banner.style.display = 'flex';
-
-        if (document.getElementById('loadingScreen').classList.contains('active')) {
-          showScreen('appScreen');
-        }
       });
 
       // Listen to Tasks
