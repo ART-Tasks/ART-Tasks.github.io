@@ -1616,32 +1616,37 @@
       text-transform: uppercase;
       letter-spacing: .2px;
     }
+
     .badge-video {
       background: rgba(168, 85, 247, 0.12);
       color: var(--purple);
       border: 1px solid rgba(168, 85, 247, 0.2);
     }
+
     .badge-thumb {
       background: rgba(59, 130, 246, 0.12);
       color: var(--blue);
       border: 1px solid rgba(59, 130, 246, 0.2);
     }
+
     .badge-graphics {
       background: rgba(245, 158, 11, 0.12);
       color: var(--yellow);
       border: 1px solid rgba(245, 158, 11, 0.2);
     }
+
     .badge-content {
       background: rgba(34, 197, 94, 0.12);
       color: var(--green);
       border: 1px solid rgba(34, 197, 94, 0.2);
     }
+
     .badge-social {
       background: rgba(236, 72, 153, 0.12);
       color: #ec4899;
       border: 1px solid rgba(236, 72, 153, 0.2);
     }
-    
+
     .card-link-icon {
       color: var(--text3);
       cursor: pointer;
@@ -1649,6 +1654,7 @@
       align-items: center;
       transition: color .15s;
     }
+
     .card-link-icon:hover {
       color: var(--accent);
     }
@@ -1664,6 +1670,7 @@
       margin-top: 16px;
       animation: fadeUp .25s ease;
     }
+
     .comments-title {
       font-family: 'Syne', sans-serif;
       font-size: 13px;
@@ -1674,6 +1681,7 @@
       gap: 6px;
       margin-bottom: 12px;
     }
+
     .comments-list {
       max-height: 200px;
       overflow-y: auto;
@@ -1683,6 +1691,7 @@
       margin-bottom: 14px;
       padding-right: 4px;
     }
+
     .comment-bubble {
       display: flex;
       gap: 10px;
@@ -1693,6 +1702,7 @@
       border-radius: 10px;
       animation: fadeUp .2s ease;
     }
+
     .comment-avatar {
       width: 28px;
       height: 28px;
@@ -1704,36 +1714,43 @@
       font-weight: 700;
       flex-shrink: 0;
     }
+
     .comment-content {
       flex: 1;
       min-width: 0;
     }
+
     .comment-header {
       display: flex;
       align-items: baseline;
       gap: 6px;
       margin-bottom: 2px;
     }
+
     .comment-name {
       font-size: 12px;
       font-weight: 600;
       color: var(--text);
     }
+
     .comment-time {
       font-size: 10px;
       color: var(--text3);
     }
+
     .comment-text {
       font-size: 13px;
       color: var(--text2);
       line-height: 1.4;
       word-break: break-word;
     }
+
     .comment-input-wrap {
       display: flex;
       gap: 8px;
       align-items: flex-end;
     }
+
     .comment-textarea {
       flex: 1;
       background: var(--s2);
@@ -1748,6 +1765,7 @@
       outline: none;
       transition: border .2s;
     }
+
     .comment-textarea:focus {
       border-color: var(--accent);
     }
@@ -1932,6 +1950,21 @@
         </div>
       </div>
 
+      <!-- Rules Warning Banner (Hidden by default) -->
+      <div id="rulesWarningBanner"
+        style="display:none; align-items:center; gap:12px; background:rgba(255, 51, 51, 0.08); border: 1px solid rgba(255, 51, 51, 0.2); border-radius: 8px; padding: 12px 16px; margin: 16px 24px 8px 24px; font-size: 13px; color: var(--accent); line-height: 1.5; animation: fadeUp .25s ease;">
+        <span style="font-size: 16px;">⚠️</span>
+        <div style="flex:1;">
+          <strong>Firestore Security Rules Issue Detected:</strong> Read/write access to your database is restricted.
+          Please update your Rules in the Firebase Console to allow authenticated access. <a
+            href="https://console.firebase.google.com/" target="_blank"
+            style="color:var(--text); text-decoration:underline; font-weight:600; margin-left:4px;">Open Firebase
+            Console</a>
+        </div>
+        <button onclick="document.getElementById('rulesWarningBanner').style.display='none'"
+          style="background:none; border:none; color:var(--text3); cursor:pointer; font-weight:bold; font-size:14px; padding:4px;">✕</button>
+      </div>
+
       <div class="content">
         <!-- Dashboard -->
         <div id="dashboardPage" class="page active">
@@ -2015,11 +2048,16 @@
                 <button class="filter-btn" onclick="filterTasks('review',this)">Review</button>
                 <button class="filter-btn" onclick="filterTasks('published',this)">Published</button>
                 <span style="border-left: 1px solid var(--border); margin: 0 4px; height: 26px;"></span>
-                <button class="filter-btn" style="border-color:rgba(168,85,247,0.3); color:var(--purple);" onclick="filterTasks('video',this)">🎬 Video Edit</button>
-                <button class="filter-btn" style="border-color:rgba(59,130,246,0.3); color:var(--blue);" onclick="filterTasks('thumb',this)">🎨 Thumbnail</button>
-                <button class="filter-btn" style="border-color:rgba(245,158,11,0.3); color:var(--yellow);" onclick="filterTasks('graphics',this)">✨ Graphics</button>
-                <button class="filter-btn" style="border-color:rgba(34,197,94,0.3); color:var(--green);" onclick="filterTasks('content',this)">✍️ Writing</button>
-                <button class="filter-btn" style="border-color:rgba(236,72,153,0.3); color:#ec4899;" onclick="filterTasks('social',this)">📱 Social Post</button>
+                <button class="filter-btn" style="border-color:rgba(168,85,247,0.3); color:var(--purple);"
+                  onclick="filterTasks('video',this)">🎬 Video Edit</button>
+                <button class="filter-btn" style="border-color:rgba(59,130,246,0.3); color:var(--blue);"
+                  onclick="filterTasks('thumb',this)">🎨 Thumbnail</button>
+                <button class="filter-btn" style="border-color:rgba(245,158,11,0.3); color:var(--yellow);"
+                  onclick="filterTasks('graphics',this)">✨ Graphics</button>
+                <button class="filter-btn" style="border-color:rgba(34,197,94,0.3); color:var(--green);"
+                  onclick="filterTasks('content',this)">✍️ Writing</button>
+                <button class="filter-btn" style="border-color:rgba(236,72,153,0.3); color:#ec4899;"
+                  onclick="filterTasks('social',this)">📱 Social Post</button>
               </div>
               <button class="btn-sm" onclick="exportCSV()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2066,7 +2104,7 @@
             <input type="text" id="f_title" placeholder="e.g. Design Landing Page V1" />
           </div>
         </div>
-        
+
         <div class="field-row">
           <div class="field">
             <label>Task Category</label>
@@ -2081,9 +2119,12 @@
           <div class="field">
             <label>Asset Checklist</label>
             <div class="checklist-wrap">
-              <label class="checklist-item"><input type="checkbox" id="f_chk_1"> <span id="f_chk_label_1">Step 1</span></label>
-              <label class="checklist-item"><input type="checkbox" id="f_chk_2"> <span id="f_chk_label_2">Step 2</span></label>
-              <label class="checklist-item"><input type="checkbox" id="f_chk_3"> <span id="f_chk_label_3">Step 3</span></label>
+              <label class="checklist-item"><input type="checkbox" id="f_chk_1"> <span id="f_chk_label_1">Step
+                  1</span></label>
+              <label class="checklist-item"><input type="checkbox" id="f_chk_2"> <span id="f_chk_label_2">Step
+                  2</span></label>
+              <label class="checklist-item"><input type="checkbox" id="f_chk_3"> <span id="f_chk_label_3">Step
+                  3</span></label>
             </div>
           </div>
         </div>
@@ -2103,7 +2144,7 @@
           <label>Description / Notes</label>
           <textarea id="f_desc" placeholder="Brief on what this task covers..."></textarea>
         </div>
-        
+
         <div class="field-row">
           <div class="field">
             <label>Status</label>
@@ -2142,13 +2183,14 @@
           <label>Move to Stage</label>
           <div class="move-row" id="moveRow"></div>
         </div>
-        
+
         <!-- Live Comments Section -->
         <div class="comments-section" id="commentsSection" style="display:none;">
           <div class="comments-title">💬 Live Discussion</div>
           <div class="comments-list" id="commentsList"></div>
           <div class="comment-input-wrap">
-            <textarea class="comment-textarea" id="commentInput" placeholder="Write a comment... (Press Enter to send)" onkeydown="handleCommentKey(event)"></textarea>
+            <textarea class="comment-textarea" id="commentInput" placeholder="Write a comment... (Press Enter to send)"
+              onkeydown="handleCommentKey(event)"></textarea>
             <button class="btn-sm primary" style="height: 38px; padding: 0 16px;" onclick="sendComment()">Send</button>
           </div>
         </div>
@@ -2282,7 +2324,7 @@
       }
     };
 
-    window.handleCategoryChange = function(val) {
+    window.handleCategoryChange = function (val) {
       updateChecklistLabels(val);
     };
 
@@ -2375,9 +2417,21 @@
         db = firebase.firestore();
         auth = firebase.auth();
 
-        auth.onAuthStateChanged(user => {
+        // Handle redirect result if user was redirected back from Google
+        auth.getRedirectResult().then(result => {
+          if (result && result.user) {
+            console.log("Logged in via Redirect successful:", result.user);
+          }
+        }).catch(e => {
+          console.error("Redirect Sign-in error:", e);
+          document.getElementById('loginError').textContent = `Redirect sign-in failed: ${e.message}`;
+          showScreen('loginScreen');
+        });
+
+        auth.onAuthStateChanged(async user => {
           if (user) {
             currentUser = user;
+            await ensureUserRegistered(currentUser);
             setupFirestoreListeners();
           } else {
             showScreen('loginScreen');
@@ -2389,13 +2443,55 @@
       }
     }
 
+    async function ensureUserRegistered(user) {
+      if (!user || !user.email) return;
+      const email = user.email;
+      const defaultName = user.displayName || email.split('@')[0];
+      const cleanName = defaultName.charAt(0).toUpperCase() + defaultName.slice(1);
+
+      try {
+        const teamRef = db.collection('teamMembers');
+        const snap = await teamRef.where('email', '==', email).get();
+        if (snap.empty) {
+          const allMembersSnap = await teamRef.get();
+          const role = allMembersSnap.empty ? 'Admin' : 'Video Editor';
+          await teamRef.add({
+            name: cleanName,
+            email: email,
+            role: role
+          });
+          showToast(`Registered as ${role}!`, 'success');
+        }
+      } catch (e) {
+        console.error("Error ensuring user registration in teamMembers:", e);
+      }
+    }
+
     window.signInWithGoogle = async function () {
+      const errDiv = document.getElementById('loginError');
+      errDiv.textContent = '';
       try {
         const provider = new firebase.auth.GoogleAuthProvider();
         // Popup is restored because Redirect session states can be blocked by Chrome cookie sandboxes on subfolder sites
         await auth.signInWithPopup(provider);
       } catch (e) {
-        document.getElementById('loginError').textContent = e.message;
+        console.warn("Google Sign-In Popup failed, trying Redirect flow...", e);
+        if (e.code === 'auth/operation-not-allowed') {
+          errDiv.innerHTML = `<strong>Google Sign-In is disabled!</strong><br>Enable it in your <em>Firebase Console &gt; Authentication &gt; Sign-in method</em>.`;
+          return;
+        }
+        // Fallback to redirect if popup is blocked or fails
+        try {
+          const provider = new firebase.auth.GoogleAuthProvider();
+          await auth.signInWithRedirect(provider);
+        } catch (redirErr) {
+          console.error("Google Sign-In Redirect also failed:", redirErr);
+          if (redirErr.code === 'auth/operation-not-allowed') {
+            errDiv.innerHTML = `<strong>Google Sign-In is disabled!</strong><br>Enable it in your <em>Firebase Console &gt; Authentication &gt; Sign-in method</em>.`;
+          } else {
+            errDiv.textContent = `Google Login failed. Try Email/Password login or check console: ${redirErr.message}`;
+          }
+        }
       }
     };
 
@@ -2414,7 +2510,11 @@
         await auth.signInWithEmailAndPassword(email, password);
       } catch (e) {
         console.error(e);
-        errDiv.textContent = e.message;
+        if (e.code === 'auth/operation-not-allowed') {
+          errDiv.innerHTML = `<strong>Email/Password Sign-In is disabled!</strong><br>Enable it in your <em>Firebase Console &gt; Authentication &gt; Sign-in method</em>.`;
+        } else {
+          errDiv.textContent = e.message;
+        }
       }
     };
 
@@ -2454,7 +2554,11 @@
         }
       } catch (e) {
         console.error(e);
-        errDiv.textContent = e.message;
+        if (e.code === 'auth/operation-not-allowed') {
+          errDiv.innerHTML = `<strong>Email/Password Sign-In is disabled!</strong><br>Enable it in your <em>Firebase Console &gt; Authentication &gt; Sign-in method</em>.`;
+        } else {
+          errDiv.textContent = e.message;
+        }
       }
     };
 
@@ -2487,6 +2591,13 @@
       }, (err) => {
         console.error(err);
         showToast("Check Firestore Rules: Read access denied", "error");
+
+        const banner = document.getElementById('rulesWarningBanner');
+        if (banner) banner.style.display = 'flex';
+
+        if (document.getElementById('loadingScreen').classList.contains('active')) {
+          showScreen('appScreen');
+        }
       });
 
       // Listen to Tasks
@@ -2525,7 +2636,7 @@
       if (!title) { showToast('Please add a title', 'error'); return; }
 
       const data = {
-        title, 
+        title,
         clipId: document.getElementById('f_clipId').value.trim(),
         category: document.getElementById('f_category').value,
         assetUrl: document.getElementById('f_assetUrl').value.trim(),
@@ -2628,15 +2739,15 @@
       editingTaskId = null;
       populateAssigneeDropdown();
       document.getElementById('modalTitle').textContent = 'New Task';
-      document.getElementById('f_title').value = ''; 
+      document.getElementById('f_title').value = '';
       document.getElementById('f_clipId').value = '';
       document.getElementById('f_assetUrl').value = '';
-      document.getElementById('f_chk_1').checked = false; 
-      document.getElementById('f_chk_2').checked = false; 
+      document.getElementById('f_chk_1').checked = false;
+      document.getElementById('f_chk_2').checked = false;
       document.getElementById('f_chk_3').checked = false;
-      document.getElementById('f_desc').value = ''; 
+      document.getElementById('f_desc').value = '';
       document.getElementById('f_status').value = status;
-      document.getElementById('f_priority').value = 'medium'; 
+      document.getElementById('f_priority').value = 'medium';
       document.getElementById('f_due').value = '';
 
       document.getElementById('f_category').value = 'video';
@@ -2656,28 +2767,28 @@
       editingTaskId = id;
       populateAssigneeDropdown();
       document.getElementById('modalTitle').textContent = 'Edit Task';
-      document.getElementById('f_title').value = t.title || ''; 
+      document.getElementById('f_title').value = t.title || '';
       document.getElementById('f_clipId').value = t.clipId || '';
       document.getElementById('f_assetUrl').value = t.assetUrl || '';
-      document.getElementById('f_desc').value = t.description || ''; 
+      document.getElementById('f_desc').value = t.description || '';
       document.getElementById('f_status').value = t.status || 'ideation';
-      document.getElementById('f_priority').value = t.priority || 'medium'; 
-      document.getElementById('f_assignee').value = t.assignee || ''; 
+      document.getElementById('f_priority').value = t.priority || 'medium';
+      document.getElementById('f_assignee').value = t.assignee || '';
       document.getElementById('f_due').value = t.due || '';
 
       const category = t.category || 'video';
       document.getElementById('f_category').value = category;
       updateChecklistLabels(category);
 
-      document.getElementById('f_chk_1').checked = t.chkScript || false; 
-      document.getElementById('f_chk_2').checked = t.chkVideo || false; 
+      document.getElementById('f_chk_1').checked = t.chkScript || false;
+      document.getElementById('f_chk_2').checked = t.chkVideo || false;
       document.getElementById('f_chk_3').checked = t.chkThumb || false;
 
       document.getElementById('deleteBtn').style.display = 'block';
       const moveField = document.getElementById('moveStatusField'), moveRow = document.getElementById('moveRow');
       moveField.style.display = 'block';
       moveRow.innerHTML = STAGES.map(s => `<button class="move-btn ${s.id === t.status ? 'current' : ''}" onclick="moveTask('${id}','${s.id}')">${s.emoji} ${s.label}</button>`).join('');
-      
+
       // Comments integration
       document.getElementById('commentsSection').style.display = 'flex';
       document.getElementById('commentInput').value = '';
@@ -2743,10 +2854,10 @@
     function taskCard(t) {
       const isOverdue = t.due && new Date(t.due) < new Date(new Date().setHours(0, 0, 0, 0)) && t.status !== 'published';
       const member = getMember(t.assignee), color = getMemberColor(member.role);
-      
+
       const categoryKey = t.category || 'video';
       const cat = CATEGORY_MAP[categoryKey] || CATEGORY_MAP.video;
-      
+
       let checkHtml = '';
       if (t.chkScript !== undefined) {
         checkHtml = `
@@ -2800,7 +2911,7 @@
         const isOverdue = t.due && new Date(t.due) < new Date(new Date().setHours(0, 0, 0, 0)) && t.status !== 'published';
         const categoryKey = t.category || 'video';
         const cat = CATEGORY_MAP[categoryKey] || CATEGORY_MAP.video;
-        
+
         let linkIconHtml = '';
         if (t.assetUrl) {
           linkIconHtml = `
@@ -2809,7 +2920,7 @@
             </a>
           `;
         }
-        
+
         return `
           <div class="table-row" onclick="openEditModal('${t.id}')">
             <div>
@@ -2874,10 +2985,10 @@
         commentsUnsubscribe();
         commentsUnsubscribe = null;
       }
-      
+
       const listDiv = document.getElementById('commentsList');
       listDiv.innerHTML = '<div style="color:var(--text3); font-size:12px; text-align:center; padding:12px;">Loading discussion...</div>';
-      
+
       commentsUnsubscribe = db.collection('tasks').doc(taskId).collection('comments')
         .orderBy('timestamp', 'asc')
         .onSnapshot((snapshot) => {
@@ -2885,19 +2996,19 @@
             listDiv.innerHTML = '<div style="color:var(--text3); font-size:12px; text-align:center; padding:24px 0;">No comments yet. Start the discussion!</div>';
             return;
           }
-          
+
           listDiv.innerHTML = snapshot.docs.map(doc => {
             const c = doc.data();
             const member = getMember(c.userEmail || c.userName);
             const color = getMemberColor(member.role);
             const initial = (member.name ? member.name[0] : '?').toUpperCase();
-            
+
             let timeStr = 'Just now';
             if (c.timestamp) {
               const date = c.timestamp.toDate ? c.timestamp.toDate() : new Date(c.timestamp);
               timeStr = date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) + ', ' + date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
             }
-            
+
             return `
               <div class="comment-bubble">
                 <div class="comment-avatar" style="background:${color.bg}; color:${color.text}; border: 1px solid ${color.border};">${initial}</div>
@@ -2911,7 +3022,7 @@
               </div>
             `;
           }).join('');
-          
+
           // Auto-scroll to the bottom of comments
           setTimeout(() => { listDiv.scrollTop = listDiv.scrollHeight; }, 50);
         }, (err) => {
@@ -2925,7 +3036,7 @@
       const input = document.getElementById('commentInput');
       const text = input.value.trim();
       if (!text) return;
-      
+
       const myProfile = getMember(currentUser.email);
       db.collection('tasks').doc(editingTaskId).collection('comments').add({
         text: text,
@@ -2933,13 +3044,13 @@
         userEmail: currentUser.email,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       })
-      .then(() => {
-        input.value = '';
-      })
-      .catch(e => {
-        console.error(e);
-        showToast("Failed to post comment", "error");
-      });
+        .then(() => {
+          input.value = '';
+        })
+        .catch(e => {
+          console.error(e);
+          showToast("Failed to post comment", "error");
+        });
     };
 
     window.handleCommentKey = function (e) {
