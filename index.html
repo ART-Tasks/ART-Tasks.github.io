@@ -2495,13 +2495,10 @@
                 <button class="filter-btn" onclick="filterHiring('reviewed',this)">🟡 Reviewed</button>
                 <button class="filter-btn" onclick="filterHiring('shortlisted',this)">🟢 Shortlisted</button>
                 <button class="filter-btn" onclick="filterHiring('rejected',this)">🔴 Rejected</button>
-                <button class="filter-btn" onclick="filterHiring('hired',this)">🟣 Hired</button>
+                <button class="filter-btn" onclick="filterHiring('hired',this)">🟣 Selected</button>
                 <button class="filter-btn" onclick="filterHiring('starred',this)">⭐ Starred</button>
               </div>
               <div class="hiring-actions">
-                <button class="btn-sm" style="border-color: rgba(34, 197, 94, 0.3); color: var(--green);" onclick="seedDummyApplicants()" title="Add 5 beautiful mock candidate entries for testing">
-                  🌱 Seed Dummy Data
-                </button>
                 <button class="btn-sm primary" onclick="openAddCandidateModal()" title="Add a candidate manually">
                   ➕ Add Candidate
                 </button>
@@ -3736,7 +3733,7 @@
       { id: 'reviewed', label: 'Reviewed', emoji: '🟡' },
       { id: 'shortlisted', label: 'Shortlisted', emoji: '🟢' },
       { id: 'rejected', label: 'Rejected', emoji: '🔴' },
-      { id: 'hired', label: 'Hired', emoji: '🟣' }
+      { id: 'hired', label: 'Selected', emoji: '🟣' }
     ];
 
     window.filterHiring = function (filter, btn) {
@@ -3826,7 +3823,7 @@
 
       const appliedDate = a.appliedAt ? new Date(a.appliedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + ' at ' + new Date(a.appliedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '—';
 
-      let statusBarHtml = isAdmin ? `<div class="field" style="margin-bottom:0;"><label>Change Status</label><div class="applicant-status-bar">${HIRING_STATUSES.map(s => `<button class="applicant-status-btn ${s.id === a.status ? 'current' : ''}" onclick="updateApplicantStatus('${id}','${s.id}')">${s.emoji} ${s.label}</button>`).join('')}</div></div>` : `<div style="margin-bottom:16px;"><span class="hiring-status-chip hchip-${a.status}">${(HIRING_STATUSES.find(s => s.id === a.status) || HIRING_STATUSES[0]).label}</span></div>`;
+      let statusBarHtml = `<div class="field" style="margin-bottom:0;"><label>Change Status</label><div class="applicant-status-bar">${HIRING_STATUSES.map(s => `<button class="applicant-status-btn ${s.id === a.status ? 'current' : ''}" onclick="updateApplicantStatus('${id}','${s.id}')">${s.emoji} ${s.label}</button>`).join('')}</div></div>`;
 
       document.getElementById('applicantModalBody').innerHTML = `
         <div class="applicant-detail-grid">
