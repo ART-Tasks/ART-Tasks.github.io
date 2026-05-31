@@ -2911,23 +2911,25 @@
       const listDiv = document.getElementById('commentsList');
       listDiv.innerHTML = '<div style="color:var(--text3); font-size:12px; text-align:center; padding:12px;">Loading discussion...</div>';
 
-      commentsUnsubscribe = db.collection('tasks').doc(taskId).collection('comments')
-        .orderBy('timestamp', 'asc')
-        .onSnapshot((snapshot) => {
-          if (snapshot.empty) {
+      commentsUnsubscribe = db.collection('tasks').doc(taskId)
+        .onSnapshot((doc) => {
+          if (!doc.exists) return;
+          const t = doc.data();
+          const commentsList = t.comments || [];
+
+          if (commentsList.length === 0) {
             listDiv.innerHTML = '<div style="color:var(--text3); font-size:12px; text-align:center; padding:24px 0;">No comments yet. Start the discussion!</div>';
             return;
           }
 
-          listDiv.innerHTML = snapshot.docs.map(doc => {
-            const c = doc.data();
+          listDiv.innerHTML = commentsList.map(c => {
             const member = getMember(c.userEmail || c.userName);
             const color = getMemberColor(member.role);
             const initial = (member.name ? member.name[0] : '?').toUpperCase();
 
             let timeStr = 'Just now';
             if (c.timestamp) {
-              const date = c.timestamp.toDate ? c.timestamp.toDate() : new Date(c.timestamp);
+              const date = new Date(c.timestamp);
               timeStr = date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) + ', ' + date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
             }
 
@@ -2960,22 +2962,17 @@
       if (!text) return;
 
       const myProfile = getMember(currentUser.email);
-      const batch = db.batch();
-      const taskRef = db.collection('tasks').doc(editingTaskId);
-      const newCommentRef = taskRef.collection('comments').doc();
-
-      batch.set(newCommentRef, {
+      const newComment = {
         text: text,
         userName: myProfile.name !== '?' ? myProfile.name : currentUser.email,
         userEmail: currentUser.email,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
+        timestamp: new Date().toISOString()
+      };
 
-      batch.update(taskRef, {
+      db.collection('tasks').doc(editingTaskId).update({
+        comments: firebase.firestore.FieldValue.arrayUnion(newComment),
         commentCount: firebase.firestore.FieldValue.increment(1)
-      });
-
-      batch.commit()
+      })
         .then(() => {
           input.value = '';
         })
