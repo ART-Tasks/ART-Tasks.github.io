@@ -1150,6 +1150,12 @@
       background: var(--s3);
     }
 
+    /* Admin View with Checkboxes */
+    .tasks-table.admin-view .table-header,
+    .tasks-table.admin-view .table-row {
+      grid-template-columns: 40px 1fr 100px 100px 90px 90px 80px;
+    }
+
     .row-title {
       font-size: 13px;
       font-weight: 500;
@@ -2424,17 +2430,22 @@
                 <button class="filter-btn" style="border-color:rgba(236,72,153,0.3); color:#ec4899;"
                   onclick="filterTasks('social',this)">📱 Social Post</button>
               </div>
-              <button class="btn-sm" onclick="exportCSV()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                Export CSV
-              </button>
+              <div style="display:flex; gap:8px;">
+                <button class="btn-sm" id="btnBulkDelete" style="display:none; color:var(--accent); border-color:rgba(255,51,51,0.3); background:rgba(255,51,51,0.05);" onclick="bulkDeleteTasks()">
+                  🗑️ Delete Selected (<span id="bulkDeleteCount">0</span>)
+                </button>
+                <button class="btn-sm" onclick="exportCSV()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  Export CSV
+                </button>
+              </div>
             </div>
             <div class="tasks-table" id="tasksTable">
-              <div class="table-header">
+              <div class="table-header" id="tasksTableHeader">
                 <div>Task</div>
                 <div>Status</div>
                 <div>Current Owner</div>
@@ -2973,7 +2984,7 @@
             try {
               let isAllowed = allowedHardcoded.includes(email);
               if (!isAllowed) {
-                const snap = await db.collection('teamMembers').where('email', '==', user.email).get();
+                const snap = await db.collection('teamMembers').where('email', '==', email).get();
                 if (!snap.empty) {
                   isAllowed = true;
                 }
@@ -3201,6 +3212,12 @@
       const isAdmin = myProfile.role === 'Admin';
       document.getElementById('btnManageTeam').style.display = isAdmin ? 'block' : 'none';
       document.getElementById('adminTeamSection').style.display = isAdmin ? 'block' : 'none';
+
+      const table = document.getElementById('tasksTable');
+      if (table) {
+        if (isAdmin) table.classList.add('admin-view');
+        else table.classList.remove('admin-view');
+      }
     }
 
     // ═══════════════════════════════════════════
@@ -3261,9 +3278,9 @@
       const role = document.getElementById('tm_role').value;
 
       if (!name || !email) { showToast('Name and Email are required', 'error'); return; }
-      if (teamMembers.find(m => m.email === email)) { showToast('User with this email already exists', 'error'); return; }
+      if (teamMembers.find(m => m.email.toLowerCase() === email.toLowerCase())) { showToast('User with this email already exists', 'error'); return; }
 
-      db.collection('teamMembers').add({ name, email, role })
+      db.collection('teamMembers').add({ name, email: email.toLowerCase(), role })
         .then(() => {
           showToast(`${name} added to team`, 'success');
           document.getElementById('tm_name').value = '';
@@ -3287,7 +3304,7 @@
 
       // Protect primary admin from role downgrades or demotions
       const member = teamMembers.find(m => m.id === id);
-      if (member && member.email === 'yashuvadje@gmail.com' && role !== 'Admin') {
+      if (member && member.email && member.email.toLowerCase() === 'yashuvadje@gmail.com' && role !== 'Admin') {
         showToast('The primary admin must remain an Admin!', 'error');
         renderAll();
         return;
@@ -3305,9 +3322,9 @@
       const role = document.getElementById('inline_tm_role').value;
 
       if (!name || !email) { showToast('Name and Email are required', 'error'); return; }
-      if (teamMembers.find(m => m.email === email)) { showToast('User with this email already exists', 'error'); return; }
+      if (teamMembers.find(m => m.email.toLowerCase() === email.toLowerCase())) { showToast('User with this email already exists', 'error'); return; }
 
-      db.collection('teamMembers').add({ name, email, role })
+      db.collection('teamMembers').add({ name, email: email.toLowerCase(), role })
         .then(() => {
           showToast(`${name} added to team`, 'success');
           document.getElementById('inline_tm_name').value = '';
@@ -3320,7 +3337,7 @@
       if (!db) return;
       
       const member = teamMembers.find(m => m.id === id);
-      if (member && member.email === 'yashuvadje@gmail.com') {
+      if (member && member.email && member.email.toLowerCase() === 'yashuvadje@gmail.com') {
         showToast('The primary admin cannot be removed!', 'error');
         return;
       }
@@ -3579,6 +3596,28 @@
       else if (taskFilter === 'video' || taskFilter === 'thumb' || taskFilter === 'graphics' || taskFilter === 'content' || taskFilter === 'social') { displayTasks = displayTasks.filter(t => (t.category || 'video') === taskFilter); }
       else if (taskFilter !== 'all') { displayTasks = displayTasks.filter(t => t.status === taskFilter); }
 
+      const myProfile = getMember(currentUser.email);
+      const isAdmin = myProfile && myProfile.role === 'Admin';
+
+      // Reset bulk selection UI
+      const master = document.getElementById('selectAllTasks');
+      if (master) master.checked = false;
+      const btnBulk = document.getElementById('btnBulkDelete');
+      if (btnBulk) btnBulk.style.display = 'none';
+
+      const header = document.getElementById('tasksTableHeader');
+      if (header) {
+        header.innerHTML = `
+          ${isAdmin ? '<div><input type="checkbox" id="selectAllTasks" onclick="toggleSelectAllTasks(this)" style="cursor:pointer; accent-color:var(--accent);" /></div>' : ''}
+          <div>Task</div>
+          <div>Status</div>
+          <div>Current Owner</div>
+          <div>Priority</div>
+          <div>Due Date</div>
+          <div>Clip ID</div>
+        `;
+      }
+
       const body = document.getElementById('tasksBody');
       if (!displayTasks.length) { body.innerHTML = `<div class="empty-state"><div class="empty-state-icon">✅</div><div class="empty-state-text">No tasks found</div></div>`; return; }
       body.innerHTML = displayTasks.map(t => {
@@ -3597,6 +3636,7 @@
 
         return `
           <div class="table-row" onclick="openEditModal('${t.id}')">
+            ${isAdmin ? `<div><input type="checkbox" class="task-select-checkbox" data-id="${t.id}" onclick="event.stopPropagation(); handleTaskSelect();" style="cursor:pointer; accent-color:var(--accent);" /></div>` : ''}
             <div>
               <div class="row-title">
                 ${esc(t.title)} 
@@ -4209,6 +4249,85 @@
       } catch (e) {
         console.error(e);
         showToast("Error adding candidate: " + e.message, "error");
+      }
+    };
+
+    // ═══════════════════════════════════════════
+    // BULK TASK MANAGEMENT
+    // ═══════════════════════════════════════════
+    window.toggleSelectAllTasks = function (master) {
+      const checkboxes = document.querySelectorAll('.task-select-checkbox');
+      checkboxes.forEach(cb => cb.checked = master.checked);
+      window.handleTaskSelect();
+    };
+
+    window.handleTaskSelect = function () {
+      const checkboxes = document.querySelectorAll('.task-select-checkbox');
+      const selected = Array.from(checkboxes).filter(cb => cb.checked);
+      
+      const master = document.getElementById('selectAllTasks');
+      if (master) {
+        master.checked = checkboxes.length > 0 && selected.length === checkboxes.length;
+        master.indeterminate = selected.length > 0 && selected.length < checkboxes.length;
+      }
+
+      const btnBulk = document.getElementById('btnBulkDelete');
+      const countSpan = document.getElementById('bulkDeleteCount');
+      
+      if (btnBulk && countSpan) {
+        if (selected.length > 0) {
+          countSpan.textContent = selected.length;
+          btnBulk.style.display = 'inline-flex';
+        } else {
+          btnBulk.style.display = 'none';
+        }
+      }
+    };
+
+    window.bulkDeleteTasks = async function () {
+      if (!db) return;
+      const checkboxes = document.querySelectorAll('.task-select-checkbox');
+      const selectedIds = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.getAttribute('data-id'));
+
+      if (selectedIds.length === 0) return;
+
+      const confirmMsg = `Are you sure you want to delete ${selectedIds.length} selected tasks? This action cannot be undone.`;
+      if (!confirm(confirmMsg)) return;
+
+      const btnBulk = document.getElementById('btnBulkDelete');
+      if (btnBulk) {
+        btnBulk.disabled = true;
+        btnBulk.textContent = 'Deleting...';
+      }
+
+      try {
+        // Chunk selectedIds into groups of 500 to respect Firestore batch limits
+        const chunks = [];
+        const tempIds = [...selectedIds];
+        while (tempIds.length > 0) {
+          chunks.push(tempIds.splice(0, 500));
+        }
+
+        for (const chunk of chunks) {
+          const batch = db.batch();
+          chunk.forEach(id => {
+            const docRef = db.collection('tasks').doc(id);
+            batch.delete(docRef);
+          });
+          await batch.commit();
+        }
+        showToast(`Successfully deleted ${selectedIds.length} tasks! 🗑️`, 'success');
+      } catch (err) {
+        console.error("Bulk deletion error:", err);
+        showToast("Error deleting tasks: " + err.message, "error");
+      } finally {
+        if (btnBulk) {
+          btnBulk.disabled = false;
+          btnBulk.innerHTML = `🗑️ Delete Selected (<span id="bulkDeleteCount">0</span>)`;
+          btnBulk.style.display = 'none';
+        }
+        const master = document.getElementById('selectAllTasks');
+        if (master) master.checked = false;
       }
     };
 

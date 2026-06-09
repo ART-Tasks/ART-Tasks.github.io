@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Thumbnail Designer Careers — TORQ Media</title>
-  <meta name="description" content="Apply for Thumbnail Designer position at TORQ Media. Check requirements, expectations, and compensation." />
+  <meta name="description"
+    content="Apply for Thumbnail Designer position at TORQ Media. Check requirements, expectations, and compensation." />
 
   <!-- Firebase Legacy Client SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap"
+    rel="stylesheet" />
 
   <script>
     const savedTheme = localStorage.getItem('art_theme') || 'dark';
@@ -19,7 +23,9 @@
   </script>
 
   <style>
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
@@ -429,17 +435,26 @@
       display: none;
       width: 18px;
       height: 18px;
-      border: 2px solid rgba(255,255,255,0.3);
+      border: 2px solid rgba(255, 255, 255, 0.3);
       border-top-color: #fff;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
       margin: 0 auto;
     }
 
-    .btn-submit.loading .btn-label { display: none; }
-    .btn-submit.loading .spinner { display: inline-block; }
+    .btn-submit.loading .btn-label {
+      display: none;
+    }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-submit.loading .spinner {
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     /* ── SUCCESS STATE ── */
     .success-state {
@@ -500,8 +515,15 @@
     }
 
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* ── RESPONSIVE ── */
@@ -510,14 +532,19 @@
         grid-template-columns: 1fr;
         gap: 40px;
       }
+
       .form-col {
         position: relative;
         top: 0;
       }
-      .role-title { font-size: 32px; }
+
+      .role-title {
+        font-size: 32px;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <div class="glow-bg"></div>
@@ -529,7 +556,8 @@
       <div class="nav-links">
         <a class="nav-link" href="../">All Roles</a>
         <button class="theme-toggle" id="themeToggleBtn" aria-label="Toggle Theme">
-          <svg id="themeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+          <svg id="themeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
         </button>
       </div>
     </div>
@@ -557,11 +585,11 @@
   <main class="main-grid">
     <!-- Left Column: Job details -->
     <div class="job-details-col">
-      
+
       <!-- Requirements Card -->
       <div class="details-card">
         <h2 class="section-title">🔧 Requirements</h2>
-        
+
         <h3 style="font-size: 15px; margin-bottom: 12px;">✅ Must-Have:</h3>
         <ul class="details-list must-have" style="margin-bottom: 24px;">
           <li>Proficiency in Adobe Photoshop and Canva</li>
@@ -590,7 +618,9 @@
           <li>Come up with attractive, clickable titles that complement the thumbnail.</li>
           <li>Maintain visual consistency with the brand.</li>
           <li>Collaborate with the team and deliver assets on time.</li>
-          <li>Be proactive in understanding our style — <a href="https://www.youtube.com/@ashishtorq/videos" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 500;">click here to see examples</a>.</li>
+          <li>Be proactive in understanding our style — <a href="https://www.youtube.com/@ashishtorq/videos"
+              target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 500;">click here to see
+              examples</a>.</li>
         </ul>
       </div>
 
@@ -632,8 +662,10 @@
 
           <div class="field">
             <label>Resume Link (Google Drive, Dropbox, Notion, etc.) <span class="required">*</span></label>
-            <input type="url" id="app_resume_link" placeholder="https://drive.google.com/file/d/... or sharing URL" required />
-            <div style="font-size: 10px; color: var(--text3); margin-top: 5px;">Please verify that the link access is set to public ("Anyone with the link can view").</div>
+            <input type="url" id="app_resume_link" placeholder="https://drive.google.com/file/d/... or sharing URL"
+              required />
+            <div style="font-size: 10px; color: var(--text3); margin-top: 5px;">Please verify that the link access is
+              set to public ("Anyone with the link can view").</div>
           </div>
 
           <div class="field">
@@ -645,7 +677,7 @@
             <span class="btn-label">Submit Application</span>
             <span class="spinner"></span>
           </button>
-          
+
           <div class="form-error" id="formError"></div>
         </form>
       </div>
@@ -655,7 +687,8 @@
         <div class="success-icon">🎉</div>
         <h2 class="success-title">Application Submitted!</h2>
         <p class="success-text">
-          Thank you for applying for the <strong>Thumbnail Designer</strong> position. Our team will review your portfolio and details and reach out to you shortly.
+          Thank you for applying for the <strong>Thumbnail Designer</strong> position. Our team will review your
+          portfolio and details and reach out to you shortly.
         </p>
       </div>
     </div>
@@ -663,7 +696,8 @@
 
   <!-- FOOTER -->
   <footer class="footer">
-    <div>&copy; <span id="year"></span> <a href="https://ashishtorq.com/" target="_blank">TORQ Media</a> · Authentic. Real. Transformative.</div>
+    <div>&copy; <span id="year"></span> <a href="https://ashishtorq.com/" target="_blank">TORQ Media</a> · Authentic.
+      Real. Transformative.</div>
   </footer>
 
   <script>
@@ -714,7 +748,6 @@
 
       btn.disabled = true;
       btn.classList.add('loading');
-      document.querySelectorAll('#applicationForm input, #applicationForm textarea').forEach(el => el.disabled = true);
 
       try {
         await db.collection('applications').add({
@@ -741,7 +774,6 @@
         errDiv.textContent = 'Something went wrong. Please try again. (' + e.message + ')';
         btn.disabled = false;
         btn.classList.remove('loading');
-        document.querySelectorAll('#applicationForm input, #applicationForm textarea').forEach(el => el.disabled = false);
       }
     }
 
@@ -772,4 +804,5 @@
     });
   </script>
 </body>
+
 </html>
