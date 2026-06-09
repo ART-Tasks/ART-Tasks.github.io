@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ART Content OS (Live Database)</title>
+  <title>TORQ Media (Live Database)</title>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -2130,7 +2130,7 @@
 
   <!-- ═══════════ LOADING ═══════════ -->
   <div id="loadingScreen" class="screen active">
-    <div class="loader-logo"><span>ART</span> Content OS</div>
+    <div class="loader-logo"><span>TORQ</span> Media</div>
     <div class="loader-bar">
       <div class="loader-fill"></div>
     </div>
@@ -2140,7 +2140,7 @@
   <div id="loginScreen" class="screen">
     <div class="login-glow"></div>
     <div class="login-card">
-      <div class="login-logo"><span>ART</span> Content OS</div>
+      <div class="login-logo"><span>TORQ</span> Media</div>
       <div class="login-tagline">Authentic. Real. Transformative.</div>
       <h2>Welcome back</h2>
       <p>Sign in to access the content workspace.</p>
@@ -2157,25 +2157,6 @@
         Continue with Google
       </button>
 
-      <div class="login-sep">or</div>
-
-      <div class="login-form">
-        <div class="field" style="margin-bottom: 12px;">
-          <label>Email Address</label>
-          <input type="email" id="login_email" placeholder="you@domain.com" />
-        </div>
-        <div class="field" style="margin-bottom: 16px;">
-          <label>Password</label>
-          <input type="password" id="login_password" placeholder="••••••••" />
-        </div>
-        <div style="display: flex; gap: 8px;">
-          <button id="emailSignInBtn" class="btn-sm primary" style="flex: 1; justify-content: center; height: 38px;"
-            onclick="signInWithEmail()">Sign In</button>
-          <button id="emailSignUpBtn" class="btn-sm" style="flex: 1; justify-content: center; height: 38px;"
-            onclick="signUpWithEmail()">Register</button>
-        </div>
-      </div>
-
       <div id="loginError" style="color:var(--accent);font-size:12px;margin-top:16px;text-align:center;"></div>
     </div>
   </div>
@@ -2185,7 +2166,7 @@
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-logo">
-        <div class="sidebar-logo-text"><span>ART</span> Content OS</div>
+        <div class="sidebar-logo-text"><span>TORQ</span> Media</div>
         <div class="sidebar-logo-sub">Live Workspace</div>
       </div>
       <nav class="sidebar-nav">
@@ -2977,10 +2958,44 @@
         auth = firebase.auth();
         if (typeof firebase.storage === 'function') storage = firebase.storage();
 
-        auth.onAuthStateChanged(user => {
+        auth.onAuthStateChanged(async user => {
           if (user) {
-            currentUser = user;
-            setupFirestoreListeners();
+            const allowedHardcoded = [
+              'management@ashishtorq.com',
+              'yashuvadje@gmail.com',
+              'support@ashishtorq.com',
+              'yashvantvadje@gmail.com'
+            ];
+            const email = user.email ? user.email.toLowerCase() : '';
+            
+            if (!db) db = firebase.firestore();
+
+            try {
+              let isAllowed = allowedHardcoded.includes(email);
+              if (!isAllowed) {
+                const snap = await db.collection('teamMembers').where('email', '==', user.email).get();
+                if (!snap.empty) {
+                  isAllowed = true;
+                }
+              }
+
+              if (isAllowed) {
+                currentUser = user;
+                setupFirestoreListeners();
+              } else {
+                console.warn("Unauthorized login attempt:", email);
+                document.getElementById('loginError').textContent = 'Access Denied: Your email is not authorized to access this workspace. Please contact an Administrator.';
+                showScreen('loginScreen');
+                setAuthLoading(false);
+                await auth.signOut();
+              }
+            } catch (err) {
+              console.error("Auth check error:", err);
+              document.getElementById('loginError').textContent = 'Error checking access permission: ' + err.message;
+              showScreen('loginScreen');
+              setAuthLoading(false);
+              await auth.signOut();
+            }
           } else {
             showScreen('loginScreen');
             setAuthLoading(false);
@@ -3126,12 +3141,19 @@
       db.collection('teamMembers').onSnapshot((snapshot) => {
         teamMembers = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
 
-        // Auto-create Yash as Admin if they log in and don't exist yet
-        if (currentUser.email === 'yashuvadje@gmail.com') {
-          if (!teamMembers.find(m => m.email === 'yashuvadje@gmail.com')) {
-            db.collection('teamMembers').add({ name: 'Yash', email: 'yashuvadje@gmail.com', role: 'Admin' });
+        // Auto-create initial team members if they log in and don't exist yet
+        const initials = [
+          { email: 'yashuvadje@gmail.com', name: 'Yash', role: 'Admin' },
+          { email: 'management@ashishtorq.com', name: 'Torq Media Management', role: 'Admin' },
+          { email: 'support@ashishtorq.com', name: 'Ashish', role: 'Admin' },
+          { email: 'yashvantvadje@gmail.com', name: 'Editor', role: 'Video Editor' }
+        ];
+
+        initials.forEach(init => {
+          if (currentUser.email.toLowerCase() === init.email.toLowerCase() && !teamMembers.find(m => m.email.toLowerCase() === init.email.toLowerCase())) {
+            db.collection('teamMembers').add({ name: init.name, email: init.email, role: init.role });
           }
-        }
+        });
 
         updateUserProfileUI();
         renderTeamList();
