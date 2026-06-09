@@ -1,21 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Careers — ART Content OS</title>
-  <meta name="description" content="Join the ART crew. Apply for open positions in video editing, content writing, graphic design, and more." />
+  <title>Careers — TORQ Media</title>
+  <meta name="description" content="Join the Torq team. We are hiring Video Editors, Content Managers, and Thumbnail Designers." />
 
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <!-- Open Graph -->
+  <meta property="og:title" content="Careers — TORQ Media">
+  <meta property="og:description" content="Join the crew. Open positions for Video Editor, Content Manager, and Thumbnail Designer.">
+  <meta property="og:type" content="website">
 
-  <link
-    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap"
-    rel="stylesheet" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+
+  <script>
+    // Prevent Flash of Unstyled Content (FOUC) by checking theme early
+    const savedTheme = localStorage.getItem('art_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
 
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     :root {
       --bg: #080808;
@@ -28,15 +38,32 @@
       --text2: #a0a0a0;
       --text3: #666;
       --accent: #FF3333;
-      --accent-l: rgba(255, 51, 51, .1);
-      --accent-d: #cc2929;
+      --accent-l: rgba(255, 51, 51, .12);
+      --accent-d: #cc2222;
       --green: #22c55e;
       --purple: #a855f7;
       --blue: #3b82f6;
       --yellow: #f59e0b;
+      --glow-opacity: 0.08;
     }
 
-    html { scroll-behavior: smooth; }
+    [data-theme="light"] {
+      --bg: #f4f5f8;
+      --s1: #ffffff;
+      --s2: #ffffff;
+      --s3: #f0f2f5;
+      --s4: #e4e6eb;
+      --border: #e4e6eb;
+      --text: #0f1419;
+      --text2: #536471;
+      --text3: #8b98a5;
+      --accent-l: rgba(255, 51, 51, 0.08);
+      --glow-opacity: 0.04;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
 
     body {
       font-family: 'DM Sans', sans-serif;
@@ -44,52 +71,133 @@
       color: var(--text);
       min-height: 100vh;
       overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ── DYNAMIC BACKDROP ── */
+    .glow-bg {
+      position: fixed;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, var(--accent-l) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.8;
+      transition: background 0.3s;
+    }
+
+    /* ── NAVBAR ── */
+    .navbar {
+      height: 70px;
+      background: rgba(var(--s1), 0.7);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .nav-container {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      justify-content: flex-between;
+      align-items: center;
+    }
+
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      align-items: center;
+    }
+
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      text-decoration: none;
+      color: var(--text);
+      transition: color 0.3s;
+    }
+
+    .nav-logo span {
+      color: var(--accent);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .theme-toggle:hover {
+      background: var(--s3);
+      border-color: var(--text2);
     }
 
     /* ── HERO ── */
     .hero {
       position: relative;
-      padding: 80px 20px 60px;
+      padding: 100px 24px 60px;
       text-align: center;
-      overflow: hidden;
-    }
-
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: -120px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(255,51,51,0.12) 0%, transparent 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .hero-logo {
-      font-family: 'Syne', sans-serif;
-      font-size: 28px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      margin-bottom: 8px;
-      position: relative;
       z-index: 1;
+      max-width: 800px;
+      margin: 0 auto;
     }
 
-    .hero-logo span {
+    .section-label {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
       color: var(--accent);
+      background: var(--accent-l);
+      padding: 6px 14px;
+      border-radius: 20px;
+      margin-bottom: 24px;
+      animation: pulse 2s infinite;
     }
 
-    .hero-tagline {
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(255, 51, 51, 0.4); }
+      70% { box-shadow: 0 0 0 8px rgba(255, 51, 51, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 51, 51, 0); }
+    }
+
+    .hero-title {
       font-family: 'Syne', sans-serif;
-      font-size: 44px;
+      font-size: 48px;
       font-weight: 800;
-      letter-spacing: -1.5px;
-      line-height: 1.15;
-      margin-bottom: 16px;
-      position: relative;
-      z-index: 1;
+      letter-spacing: -2px;
+      line-height: 1.1;
+      margin-bottom: 20px;
       background: linear-gradient(135deg, var(--text) 0%, var(--text2) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -97,511 +205,405 @@
     }
 
     .hero-sub {
-      font-size: 16px;
+      font-size: 17px;
       color: var(--text2);
-      max-width: 520px;
-      margin: 0 auto 32px;
       line-height: 1.6;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* ── JOBS SECTION ── */
+    .jobs-section {
       position: relative;
       z-index: 1;
-    }
-
-    .hero-badges {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero-badge {
-      background: var(--s2);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 6px 16px;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text2);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    /* ── FORM CONTAINER ── */
-    .form-container {
-      max-width: 640px;
+      max-width: 900px;
+      width: 100%;
       margin: 0 auto 80px;
-      padding: 0 20px;
+      padding: 0 24px;
     }
 
-    .form-card {
+    .jobs-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .job-card {
       background: var(--s1);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 36px 32px;
+      padding: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
       overflow: hidden;
+      cursor: pointer;
     }
 
-    .form-card::before {
+    .job-card::before {
       content: '';
       position: absolute;
-      top: 0;
       left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent), var(--purple), var(--blue));
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--accent);
+      opacity: 0;
+      transition: opacity 0.3s;
     }
 
-    .form-title {
+    .job-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .job-card:hover::before {
+      opacity: 1;
+    }
+
+    .job-info-side {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .job-title {
       font-family: 'Syne', sans-serif;
       font-size: 22px;
       font-weight: 700;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    .form-subtitle {
-      font-size: 13px;
-      color: var(--text3);
-      margin-bottom: 28px;
+    .job-meta-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
     }
 
-    .field {
-      margin-bottom: 18px;
-    }
-
-    .field label {
-      display: block;
-      font-size: 12px;
+    .meta-pill {
+      font-size: 11px;
       font-weight: 600;
-      color: var(--text2);
-      margin-bottom: 6px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-    }
-
-    .field label .required {
-      color: var(--accent);
-      margin-left: 2px;
-    }
-
-    .field input,
-    .field select,
-    .field textarea {
-      width: 100%;
+      padding: 4px 10px;
+      border-radius: 6px;
       background: var(--s2);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 14px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      outline: none;
+      color: var(--text2);
     }
 
-    .field input:focus,
-    .field select:focus,
-    .field textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(255, 51, 51, 0.1);
-    }
-
-    .field input::placeholder,
-    .field textarea::placeholder {
-      color: var(--text3);
-    }
-
-    .field textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
-
-    .field select {
-      cursor: pointer;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      padding-right: 36px;
-    }
-
-    .field-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    /* ── FILE UPLOAD ── */
-    .file-upload-area {
-      border: 2px dashed var(--border);
-      border-radius: 10px;
-      padding: 28px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      background: var(--s2);
-      position: relative;
-    }
-
-    .file-upload-area:hover,
-    .file-upload-area.dragover {
-      border-color: var(--accent);
-      background: var(--accent-l);
-    }
-
-    .file-upload-area.has-file {
-      border-color: var(--green);
-      background: rgba(34, 197, 94, 0.06);
-    }
-
-    .file-upload-icon {
-      font-size: 28px;
-      margin-bottom: 8px;
-    }
-
-    .file-upload-text {
+    .job-skills {
       font-size: 13px;
       color: var(--text2);
-      margin-bottom: 4px;
     }
 
-    .file-upload-hint {
-      font-size: 11px;
-      color: var(--text3);
+    .job-skills strong {
+      color: var(--text);
     }
 
-    .file-upload-name {
-      font-size: 13px;
-      color: var(--green);
-      font-weight: 500;
-      margin-top: 8px;
-      display: none;
+    .job-action-side {
+      margin-left: 24px;
+      flex-shrink: 0;
     }
 
-    .file-upload-area.has-file .file-upload-name {
-      display: block;
-    }
-
-    .file-upload-area.has-file .file-upload-text,
-    .file-upload-area.has-file .file-upload-hint {
-      display: none;
-    }
-
-    .file-upload-area.has-file .file-upload-icon::after {
-      content: '✅';
-    }
-
-    .file-upload-area:not(.has-file) .file-upload-icon::after {
-      content: '📄';
-    }
-
-    .file-input-hidden {
-      display: none;
-    }
-
-    /* ── SUBMIT BUTTON ── */
-    .btn-submit {
-      width: 100%;
-      padding: 14px;
-      background: var(--accent);
-      border: none;
+    .btn-apply {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--s2);
+      border: 1px solid var(--border);
       border-radius: 10px;
-      color: #fff;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px;
+      padding: 12px 24px;
+      font-size: 14px;
       font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin-top: 8px;
+      color: var(--text);
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .job-card:hover .btn-apply {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 4px 15px var(--accent-l);
+    }
+
+    .btn-apply svg {
+      transition: transform 0.2s ease;
+    }
+
+    .job-card:hover .btn-apply svg {
+      transform: translateX(4px);
+    }
+
+    /* ── CULTURE SECTION ── */
+    .culture-section {
+      background: var(--s1);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 80px 24px;
+      z-index: 1;
       position: relative;
-      overflow: hidden;
     }
 
-    .btn-submit:hover:not(:disabled) {
-      background: var(--accent-d);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 20px rgba(255, 51, 51, 0.3);
-    }
-
-    .btn-submit:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .btn-submit .spinner {
-      display: none;
-      width: 18px;
-      height: 18px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
+    .culture-container {
+      max-width: 1000px;
       margin: 0 auto;
-    }
-
-    .btn-submit.loading .btn-label { display: none; }
-    .btn-submit.loading .spinner { display: inline-block; }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── SUCCESS STATE ── */
-    .success-state {
-      display: none;
       text-align: center;
-      padding: 48px 20px;
     }
 
-    .success-state.active {
-      display: block;
-      animation: fadeUp 0.4s ease;
-    }
-
-    .success-icon {
-      font-size: 56px;
+    .culture-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
       margin-bottom: 16px;
     }
 
-    .success-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 24px;
-      font-weight: 700;
-      margin-bottom: 10px;
+    .culture-sub {
+      color: var(--text2);
+      max-width: 600px;
+      margin: 0 auto 50px;
+      font-size: 15px;
     }
 
-    .success-text {
-      font-size: 14px;
+    .culture-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .culture-card {
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 24px;
+      text-align: left;
+      transition: border-color 0.3s;
+    }
+
+    .culture-card:hover {
+      border-color: var(--accent);
+    }
+
+    .culture-icon {
+      font-size: 32px;
+      margin-bottom: 18px;
+    }
+
+    .culture-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .culture-text {
+      font-size: 13px;
       color: var(--text2);
-      max-width: 400px;
-      margin: 0 auto;
       line-height: 1.6;
     }
 
-    /* ── ERROR MSG ── */
-    .form-error {
-      color: var(--accent);
-      font-size: 12px;
-      text-align: center;
-      margin-top: 12px;
-      min-height: 18px;
-    }
-
     /* ── FOOTER ── */
-    .page-footer {
+    .footer {
+      margin-top: auto;
+      border-top: 1px solid var(--border);
+      padding: 40px 24px;
       text-align: center;
-      padding: 24px 20px 40px;
-      font-size: 12px;
+      font-size: 13px;
       color: var(--text3);
+      z-index: 1;
+      background: var(--s1);
     }
 
-    .page-footer a {
+    .footer a {
       color: var(--accent);
       text-decoration: none;
-    }
-
-    /* ── ANIMATIONS ── */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .fade-up {
-      animation: fadeUp 0.5s ease both;
+      font-weight: 500;
     }
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 640px) {
-      .hero-tagline { font-size: 30px; }
-      .hero { padding: 60px 16px 40px; }
-      .form-card { padding: 24px 18px; }
-      .field-row { grid-template-columns: 1fr; gap: 0; }
-      .hero-badges { gap: 6px; }
+    @media (max-width: 768px) {
+      .hero-title { font-size: 36px; }
+      .hero { padding: 60px 20px 40px; }
+      .job-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+        padding: 24px;
+      }
+      .job-action-side {
+        margin-left: 0;
+        width: 100%;
+      }
+      .btn-apply {
+        width: 100%;
+        justify-content: center;
+      }
+      .culture-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
     }
   </style>
 </head>
-
 <body>
 
-  <!-- HERO -->
-  <header class="hero fade-up">
-    <div class="hero-logo"><span>ART</span> Content OS</div>
-    <h1 class="hero-tagline">Join the ART Crew</h1>
-    <p class="hero-sub">
-      We're building something authentic, real, and transformative. If you're passionate about content creation,
-      we'd love to hear from you.
-    </p>
-    <div class="hero-badges">
-      <span class="hero-badge">🎬 Video Editing</span>
-      <span class="hero-badge">✍️ Content Writing</span>
-      <span class="hero-badge">🎨 Graphic Design</span>
-      <span class="hero-badge">📱 Social Media</span>
-    </div>
-  </header>
+  <div class="glow-bg"></div>
 
-  <!-- APPLICATION FORM -->
-  <div class="form-container fade-up" style="animation-delay: 0.15s;">
-    <div class="form-card" id="formCard">
-      <div class="form-title">📋 Application Form</div>
-      <div class="form-subtitle">Fill out the details below. Fields marked with * are required.</div>
-
-      <form id="applicationForm" onsubmit="return false;">
-        <div class="field-row">
-          <div class="field">
-            <label>Full Name <span class="required">*</span></label>
-            <input type="text" id="app_name" placeholder="e.g. Rahul Sharma" required />
-          </div>
-          <div class="field">
-            <label>Email Address <span class="required">*</span></label>
-            <input type="email" id="app_email" placeholder="you@email.com" required />
-          </div>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="flex-between">
+        <a class="nav-logo" href="#"><span>TORQ</span> Media</a>
+        <div class="nav-actions">
+          <button class="theme-toggle" id="themeToggleBtn" aria-label="Toggle Theme">
+            <!-- Sun / Moon Icon will be injected or changed dynamically -->
+            <svg id="themeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+          </button>
         </div>
-
-        <div class="field-row">
-          <div class="field">
-            <label>Mobile Number <span class="required">*</span></label>
-            <input type="tel" id="app_mobile" placeholder="+91 98765 43210" required />
-          </div>
-          <div class="field">
-            <label>Position Applying For <span class="required">*</span></label>
-            <select id="app_position" required>
-              <option value="" disabled selected>Select a role…</option>
-              <option value="Video Editor">🎬 Video Editor</option>
-              <option value="Content Writer">✍️ Content Writer</option>
-              <option value="Graphic Designer">🎨 Graphic Designer</option>
-              <option value="Social Media Manager">📱 Social Media Manager</option>
-              <option value="Reviewer">👁️ Reviewer</option>
-              <option value="Other">🔧 Other</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Portfolio / LinkedIn URL</label>
-          <input type="url" id="app_portfolio" placeholder="https://linkedin.com/in/your-profile" />
-        </div>
-
-        <div class="field">
-          <label>Resume Link (Google Drive, Dropbox, Notion, etc.) <span class="required">*</span></label>
-          <input type="url" id="app_resume_link" placeholder="https://drive.google.com/file/d/... or sharing URL" required />
-          <div style="font-size: 11px; color: var(--text3); margin-top: 6px;">Please make sure the link access is set to public ("Anyone with the link can view") so our team can access it.</div>
-        </div>
-
-        <div class="field">
-          <label>Cover Letter / Why ART?</label>
-          <textarea id="app_cover" placeholder="Tell us why you'd be a great fit for ART…"></textarea>
-        </div>
-
-        <button type="button" class="btn-submit" id="submitBtn" onclick="submitApplication()">
-          <span class="btn-label">Submit Application</span>
-          <span class="spinner"></span>
-        </button>
-        <div class="form-error" id="formError"></div>
-      </form>
-    </div>
-
-    <!-- Success State -->
-    <div class="success-state" id="successState">
-      <div class="success-icon">🎉</div>
-      <div class="success-title">Application Submitted!</div>
-      <div class="success-text">
-        Thank you for your interest in joining ART. Our team will review your application and get back to you soon.
-        Keep creating awesome content! 🚀
       </div>
     </div>
-  </div>
+  </nav>
 
-  <footer class="page-footer">
-    <a href="https://art-tasks.github.io" target="_blank">ART Content OS</a> · Authentic. Real. Transformative.
+  <!-- HERO -->
+  <header class="hero">
+    <div class="section-label">Hiring Now</div>
+    <h1 class="hero-title">Join the Torq Team</h1>
+    <p class="hero-sub">
+      Our vision is to build something authentic, real, and transformative. Join the team and make it happen while you make it happen for yourself.
+    </p>
+  </header>
+
+  <!-- JOBS LIST -->
+  <main class="jobs-section">
+    <div class="jobs-list">
+      
+      <!-- Video Editor Card -->
+      <div class="job-card" onclick="window.location.href='./videoeditor/'">
+        <div class="job-info-side">
+          <h2 class="job-title">🎬 Video Editor</h2>
+          <div class="job-meta-pills">
+            <span class="meta-pill">Remote</span>
+            <span class="meta-pill">Freelance / Part-Time</span>
+            <span class="meta-pill">Immediate</span>
+          </div>
+          <p class="job-skills"><strong>Skills needed:</strong> Premiere Pro, After Effects</p>
+        </div>
+        <div class="job-action-side">
+          <a href="./videoeditor/" class="btn-apply">
+            Apply Now
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Content Manager Card -->
+      <div class="job-card" onclick="window.location.href='./contentwriter/'">
+        <div class="job-info-side">
+          <h2 class="job-title">✍️ Content Manager</h2>
+          <div class="job-meta-pills">
+            <span class="meta-pill">Remote</span>
+            <span class="meta-pill">Freelance / Part-Time</span>
+            <span class="meta-pill">Immediate</span>
+          </div>
+          <p class="job-skills"><strong>Skills needed:</strong> Google Sheets / MS Excel</p>
+        </div>
+        <div class="job-action-side">
+          <a href="./contentwriter/" class="btn-apply">
+            Apply Now
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Thumbnail Designer Card -->
+      <div class="job-card" onclick="window.location.href='./thumbnail/'">
+        <div class="job-info-side">
+          <h2 class="job-title">🎨 Thumbnail Designer</h2>
+          <div class="job-meta-pills">
+            <span class="meta-pill">Remote</span>
+            <span class="meta-pill">Freelance / Part-Time</span>
+            <span class="meta-pill">Immediate</span>
+          </div>
+          <p class="job-skills"><strong>Skills needed:</strong> Photoshop, Canva</p>
+        </div>
+        <div class="job-action-side">
+          <a href="./thumbnail/" class="btn-apply">
+            Apply Now
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- CULTURE SECTION -->
+  <section class="culture-section">
+    <div class="culture-container">
+      <h2 class="culture-title">Why work with us?</h2>
+      <p class="culture-sub">We build modern tools, high-performing media campaigns, and deep content experiences. Here is what you get.</p>
+      
+      <div class="culture-grid">
+        <div class="culture-card">
+          <div class="culture-icon">🌍</div>
+          <h3 class="culture-name">100% Remote</h3>
+          <p class="culture-text">Work from anywhere in the world. As long as you deliver amazing quality and stay on schedule, we don't track your location.</p>
+        </div>
+        <div class="culture-card">
+          <div class="culture-icon">💡</div>
+          <h3 class="culture-name">Creative Freedom</h3>
+          <p class="culture-text">We value ideas. You won't just be an execution hand; you'll help direct styles, thumbnails, titles, and storytelling strategies.</p>
+        </div>
+        <div class="culture-card">
+          <div class="culture-icon">💰</div>
+          <h3 class="culture-name">Professional Growth</h3>
+          <p class="culture-text">Competitive compensation with timely payouts. Work directly with creative leaders and build a premium portfolio of high-impact work.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div>&copy; <span id="year"></span> <a href="https://ashishtorq.com/" target="_blank">TORQ Media</a> · Authentic. Real. Transformative.</div>
   </footer>
 
   <script>
-    // ═══════════════════════════════════════════
-    // FIREBASE CONFIGURATION (same as main app)
-    // ═══════════════════════════════════════════
-    const firebaseConfig = {
-      apiKey: "AIzaSyBe0W3HXC-oXeSYP4D2pDt6Ogl2X3Gzc44",
-      authDomain: "art-content-os.firebaseapp.com",
-      projectId: "art-content-os",
-      storageBucket: "art-content-os.firebasestorage.app",
-      messagingSenderId: "706738259793",
-      appId: "1:706738259793:web:58d3acc61088711ddbf570",
-      measurementId: "G-CHSBC9FEEM"
-    };
+    document.getElementById('year').textContent = new Date().getFullYear();
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    // Theme Switcher implementation
+    const toggleBtn = document.getElementById('themeToggleBtn');
+    const themeIcon = document.getElementById('themeIcon');
 
-    // ═══════════════════════════════════════════
-    // SUBMIT APPLICATION
-    // ═══════════════════════════════════════════
-    async function submitApplication() {
-      const errDiv = document.getElementById('formError');
-      const btn = document.getElementById('submitBtn');
-      errDiv.textContent = '';
+    const sunSVG = `<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>`;
+    const moonSVG = `<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>`;
 
-      // Gather values
-      const name = document.getElementById('app_name').value.trim();
-      const email = document.getElementById('app_email').value.trim();
-      const mobile = document.getElementById('app_mobile').value.trim();
-      const position = document.getElementById('app_position').value;
-      const portfolio = document.getElementById('app_portfolio').value.trim();
-      const resumeLink = document.getElementById('app_resume_link').value.trim();
-      const coverLetter = document.getElementById('app_cover').value.trim();
-
-      // Validate
-      if (!name || !email || !mobile || !position || !resumeLink) {
-        errDiv.textContent = 'Please fill in all required fields.';
-        return;
-      }
-
-      // Email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        errDiv.textContent = 'Please enter a valid email address.';
-        return;
-      }
-
-      // Simple URL validation for resume link
-      if (!resumeLink.startsWith('http://') && !resumeLink.startsWith('https://')) {
-        errDiv.textContent = 'Please enter a valid URL for your resume link (starting with http:// or https://).';
-        return;
-      }
-
-      // Disable button
-      btn.disabled = true;
-      btn.classList.add('loading');
-
-      try {
-        // Save application directly to Firestore with the text link
-        await db.collection('applications').add({
-          name: name,
-          email: email,
-          mobile: mobile,
-          position: position,
-          portfolio: portfolio || '',
-          resumeUrl: resumeLink,
-          resumeName: 'External Link',
-          coverLetter: coverLetter || '',
-          status: 'new',
-          starred: false,
-          appliedAt: new Date().toISOString(),
-          comments: [],
-          commentCount: 0
-        });
-
-        // Show success
-        document.getElementById('formCard').style.display = 'none';
-        document.getElementById('successState').classList.add('active');
-
-      } catch (e) {
-        console.error('Submission error:', e);
-        errDiv.textContent = 'Something went wrong. Please try again. (' + e.message + ')';
-        btn.disabled = false;
-        btn.classList.remove('loading');
+    function updateThemeUI(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      if (theme === 'light') {
+        themeIcon.innerHTML = moonSVG;
+      } else {
+        themeIcon.innerHTML = sunSVG;
       }
     }
-  </script>
 
+    // Initialize UI
+    const currentTheme = localStorage.getItem('art_theme') || 'dark';
+    updateThemeUI(currentTheme);
+
+    toggleBtn.addEventListener('click', () => {
+      const activeTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = activeTheme === 'light' ? 'dark' : 'light';
+      localStorage.setItem('art_theme', newTheme);
+      updateThemeUI(newTheme);
+    });
+  </script>
 </body>
 </html>

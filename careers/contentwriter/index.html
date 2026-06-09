@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Content Manager Careers — TORQ Media</title>
+  <meta name="description" content="Apply for Content Manager position at TORQ Media. Check requirements, expectations, and compensation." />
+
+  <!-- Firebase Legacy Client SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+
+  <script>
+    const savedTheme = localStorage.getItem('art_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #080808;
+      --s1: #101010;
+      --s2: #161616;
+      --s3: #1e1e1e;
+      --s4: #272727;
+      --border: #2c2c2c;
+      --text: #f0f0f0;
+      --text2: #a0a0a0;
+      --text3: #666;
+      --accent: #FF3333;
+      --accent-l: rgba(255, 51, 51, .12);
+      --accent-d: #cc2222;
+      --green: #22c55e;
+      --green-l: rgba(34, 197, 94, 0.12);
+      --purple: #a855f7;
+      --blue: #3b82f6;
+      --yellow: #f59e0b;
+    }
+
+    [data-theme="light"] {
+      --bg: #f4f5f8;
+      --s1: #ffffff;
+      --s2: #ffffff;
+      --s3: #f0f2f5;
+      --s4: #e4e6eb;
+      --border: #e4e6eb;
+      --text: #0f1419;
+      --text2: #536471;
+      --text3: #8b98a5;
+      --accent-l: rgba(255, 51, 51, 0.08);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ── DYNAMIC BACKDROP ── */
+    .glow-bg {
+      position: fixed;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, var(--accent-l) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.8;
+    }
+
+    /* ── NAVBAR ── */
+    .navbar {
+      height: 70px;
+      background: rgba(var(--s1), 0.7);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .nav-container {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .nav-logo span {
+      color: var(--accent);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .nav-link {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover {
+      color: var(--text);
+    }
+
+    .theme-toggle {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .theme-toggle:hover {
+      background: var(--s3);
+      border-color: var(--text2);
+    }
+
+    /* ── HEADER NAVIGATION ── */
+    .header-nav {
+      max-width: 1100px;
+      width: 100%;
+      margin: 40px auto 0;
+      padding: 0 24px;
+      z-index: 1;
+    }
+
+    .breadcrumb {
+      font-size: 13px;
+      color: var(--text3);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .breadcrumb a {
+      color: var(--text2);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .breadcrumb a:hover {
+      color: var(--accent);
+    }
+
+    .role-title-section {
+      margin-bottom: 30px;
+    }
+
+    .role-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+
+    .work-details-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .detail-pill {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text2);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .detail-pill strong {
+      color: var(--text);
+    }
+
+    /* ── MAIN CONTENT GRID ── */
+    .main-grid {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto 80px;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 40px;
+      align-items: start;
+      z-index: 1;
+    }
+
+    /* ── JOB DETAILS ── */
+    .job-details-col {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .details-card {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+    }
+
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    .details-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      list-style: none;
+    }
+
+    .details-list li {
+      position: relative;
+      padding-left: 24px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text2);
+    }
+
+    .details-list li::before {
+      content: "•";
+      position: absolute;
+      left: 6px;
+      top: 0;
+      color: var(--accent);
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .details-list.must-have li::before {
+      content: "✓";
+      color: var(--green);
+      font-size: 12px;
+      top: 2px;
+      left: 4px;
+    }
+
+    .pay-amount {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent);
+      font-family: 'Syne', sans-serif;
+    }
+
+    /* ── FORM CONTAINER ── */
+    .form-col {
+      position: sticky;
+      top: 90px;
+    }
+
+    .form-card {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .form-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--purple), var(--blue));
+    }
+
+    .form-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .form-subtitle {
+      font-size: 13px;
+      color: var(--text3);
+      margin-bottom: 28px;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text2);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .field label .required {
+      color: var(--accent);
+      margin-left: 2px;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 14px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255, 51, 51, 0.1);
+    }
+
+    .field input::placeholder,
+    .field textarea::placeholder {
+      color: var(--text3);
+    }
+
+    .field textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-submit:hover:not(:disabled) {
+      background: var(--accent-d);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(255, 51, 51, 0.3);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-submit .spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin: 0 auto;
+    }
+
+    .btn-submit.loading .btn-label { display: none; }
+    .btn-submit.loading .spinner { display: inline-block; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── SUCCESS STATE ── */
+    .success-state {
+      display: none;
+      text-align: center;
+      padding: 40px 10px;
+    }
+
+    .success-state.active {
+      display: block;
+      animation: fadeUp 0.4s ease;
+    }
+
+    .success-icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+    }
+
+    .success-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .success-text {
+      font-size: 14px;
+      color: var(--text2);
+      max-width: 400px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .form-error {
+      color: var(--accent);
+      font-size: 12px;
+      text-align: center;
+      margin-top: 12px;
+      min-height: 18px;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      margin-top: auto;
+      border-top: 1px solid var(--border);
+      padding: 40px 24px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text3);
+      z-index: 1;
+      background: var(--s1);
+    }
+
+    .footer a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+      .form-col {
+        position: relative;
+        top: 0;
+      }
+      .role-title { font-size: 32px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-bg"></div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo"><span>TORQ</span> Media</div>
+      <div class="nav-links">
+        <a class="nav-link" href="../">All Roles</a>
+        <button class="theme-toggle" id="themeToggleBtn" aria-label="Toggle Theme">
+          <svg id="themeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- BREADCRUMB & HEADER -->
+  <header class="header-nav">
+    <div class="breadcrumb">
+      <a href="../">Careers</a>
+      <span>/</span>
+      <span>Content Manager</span>
+    </div>
+    <div class="role-title-section">
+      <h1 class="role-title">Content Manager</h1>
+      <div class="work-details-bar">
+        <span class="detail-pill">📍 <strong>Remote</strong></span>
+        <span class="detail-pill">💼 <strong>Part-Time / Freelance</strong></span>
+        <span class="detail-pill">📅 <strong>Immediate</strong></span>
+        <span class="detail-pill">🎓 <strong>Graduate enrolled/completed</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN GRID -->
+  <main class="main-grid">
+    <!-- Left Column: Job details -->
+    <div class="job-details-col">
+      
+      <!-- Requirements Card -->
+      <div class="details-card">
+        <h2 class="section-title">🔧 Requirements</h2>
+        
+        <ul class="details-list must-have">
+          <li>Excellent project management and coordination skills</li>
+          <li>Strong written communication (titles, descriptions, community posts)</li>
+          <li>Understanding of YouTube algorithms and SEO</li>
+          <li>Past experience managing a content calendar</li>
+          <li>Experience working with a creator or content-based team</li>
+          <li>Familiarity with analytics tools like MS Excel or Google Sheets</li>
+          <li>Must be punctual, organized, and proactive</li>
+          <li>Must have completed or be currently enrolled in a graduate-level program</li>
+        </ul>
+      </div>
+
+      <!-- Expectations Card -->
+      <div class="details-card">
+        <h2 class="section-title">✨ Expectations</h2>
+        <ul class="details-list">
+          <li>Plan, schedule, and oversee the content calendar.</li>
+          <li>Coordinate with editor and designer to ensure timely delivery.</li>
+          <li>Research topics, write optimized titles and descriptions.</li>
+          <li>Post content across YouTube (videos, shorts, community tab).</li>
+          <li>Track video performance and adjust strategy accordingly.</li>
+          <li>Actively recommend improvements for reach and engagement.</li>
+        </ul>
+      </div>
+
+      <!-- Compensation Card -->
+      <div class="details-card">
+        <h2 class="section-title">💰 Compensation</h2>
+        <div class="pay-amount">₹2,000 – ₹10,000 / month</div>
+        <p style="font-size: 13px; color: var(--text2); margin-top: 8px;">Based on scope, output, and portfolio experience.</p>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Application form -->
+    <div class="form-col">
+      <div class="form-card" id="formCard">
+        <h2 class="form-title">Apply Now</h2>
+        <p class="form-subtitle">Fill in the details below. All fields marked with * are required.</p>
+
+        <form id="applicationForm" onsubmit="return false;">
+          <div class="field">
+            <label>Full Name <span class="required">*</span></label>
+            <input type="text" id="app_name" placeholder="e.g. Rahul Sharma" required />
+          </div>
+
+          <div class="field">
+            <label>Email Address <span class="required">*</span></label>
+            <input type="email" id="app_email" placeholder="you@email.com" required />
+          </div>
+
+          <div class="field">
+            <label>Mobile Number <span class="required">*</span></label>
+            <input type="tel" id="app_mobile" placeholder="+91 98765 43210" required />
+          </div>
+
+          <div class="field">
+            <label>Portfolio / LinkedIn URL</label>
+            <input type="url" id="app_portfolio" placeholder="https://linkedin.com/in/your-profile" />
+          </div>
+
+          <div class="field">
+            <label>Resume Link (Google Drive, Dropbox, Notion, etc.) <span class="required">*</span></label>
+            <input type="url" id="app_resume_link" placeholder="https://drive.google.com/file/d/... or sharing URL" required />
+            <div style="font-size: 10px; color: var(--text3); margin-top: 5px;">Please verify that the link access is set to public ("Anyone with the link can view").</div>
+          </div>
+
+          <div class="field">
+            <label>Cover Letter / Why Torq?</label>
+            <textarea id="app_cover" placeholder="Tell us why you would be a great fit for Torq..."></textarea>
+          </div>
+
+          <button type="button" class="btn-submit" id="submitBtn" onclick="submitApplication()">
+            <span class="btn-label">Submit Application</span>
+            <span class="spinner"></span>
+          </button>
+          
+          <div class="form-error" id="formError"></div>
+        </form>
+      </div>
+
+      <!-- Success State -->
+      <div class="success-state" id="successState">
+        <div class="success-icon">🎉</div>
+        <h2 class="success-title">Application Submitted!</h2>
+        <p class="success-text">
+          Thank you for applying for the <strong>Content Manager</strong> position. Our team will review your application and details and reach out to you shortly.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div>&copy; <span id="year"></span> <a href="https://ashishtorq.com/" target="_blank">TORQ Media</a> · Authentic. Real. Transformative.</div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBe0W3HXC-oXeSYP4D2pDt6Ogl2X3Gzc44",
+      authDomain: "art-content-os.firebaseapp.com",
+      projectId: "art-content-os",
+      storageBucket: "art-content-os.firebasestorage.app",
+      messagingSenderId: "706738259793",
+      appId: "1:706738259793:web:58d3acc61088711ddbf570",
+      measurementId: "G-CHSBC9FEEM"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Submit Application function
+    async function submitApplication() {
+      const errDiv = document.getElementById('formError');
+      const btn = document.getElementById('submitBtn');
+      errDiv.textContent = '';
+
+      const name = document.getElementById('app_name').value.trim();
+      const email = document.getElementById('app_email').value.trim();
+      const mobile = document.getElementById('app_mobile').value.trim();
+      const portfolio = document.getElementById('app_portfolio').value.trim();
+      const resumeLink = document.getElementById('app_resume_link').value.trim();
+      const coverLetter = document.getElementById('app_cover').value.trim();
+
+      if (!name || !email || !mobile || !resumeLink) {
+        errDiv.textContent = 'Please fill in all required fields.';
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        errDiv.textContent = 'Please enter a valid email address.';
+        return;
+      }
+
+      if (!resumeLink.startsWith('http://') && !resumeLink.startsWith('https://')) {
+        errDiv.textContent = 'Please enter a valid URL for your resume link (starting with http:// or https://).';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.classList.add('loading');
+
+      try {
+        await db.collection('applications').add({
+          name: name,
+          email: email,
+          mobile: mobile,
+          position: "Content Writer",
+          portfolio: portfolio || '',
+          resumeUrl: resumeLink,
+          resumeName: 'External Link',
+          coverLetter: coverLetter || '',
+          status: 'new',
+          starred: false,
+          appliedAt: new Date().toISOString(),
+          comments: [],
+          commentCount: 0
+        });
+
+        document.getElementById('formCard').style.display = 'none';
+        document.getElementById('successState').classList.add('active');
+
+      } catch (e) {
+        console.error('Submission error:', e);
+        errDiv.textContent = 'Something went wrong. Please try again. (' + e.message + ')';
+        btn.disabled = false;
+        btn.classList.remove('loading');
+      }
+    }
+
+    // Theme Switcher implementation
+    const toggleBtn = document.getElementById('themeToggleBtn');
+    const themeIcon = document.getElementById('themeIcon');
+
+    const sunSVG = `<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>`;
+    const moonSVG = `<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>`;
+
+    function updateThemeUI(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      if (theme === 'light') {
+        themeIcon.innerHTML = moonSVG;
+      } else {
+        themeIcon.innerHTML = sunSVG;
+      }
+    }
+
+    const currentTheme = localStorage.getItem('art_theme') || 'dark';
+    updateThemeUI(currentTheme);
+
+    toggleBtn.addEventListener('click', () => {
+      const activeTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = activeTheme === 'light' ? 'dark' : 'light';
+      localStorage.setItem('art_theme', newTheme);
+      updateThemeUI(newTheme);
+    });
+  </script>
+</body>
+</html>
