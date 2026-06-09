@@ -699,6 +699,7 @@
 
       btn.disabled = true;
       btn.classList.add('loading');
+      document.querySelectorAll('#applicationForm input, #applicationForm textarea').forEach(el => el.disabled = true);
 
       try {
         await db.collection('applications').add({
@@ -725,6 +726,7 @@
         errDiv.textContent = 'Something went wrong. Please try again. (' + e.message + ')';
         btn.disabled = false;
         btn.classList.remove('loading');
+        document.querySelectorAll('#applicationForm input, #applicationForm textarea').forEach(el => el.disabled = false);
       }
     }
 
