@@ -1122,7 +1122,7 @@
 
     .table-header {
       display: grid;
-      grid-template-columns: 1fr 100px 100px 90px 90px 80px;
+      grid-template-columns: 1fr 100px 100px 100px 90px 90px 80px;
       padding: 10px 16px;
       border-bottom: 1px solid var(--border);
       font-size: 11px;
@@ -1134,7 +1134,7 @@
 
     .table-row {
       display: grid;
-      grid-template-columns: 1fr 100px 100px 90px 90px 80px;
+      grid-template-columns: 1fr 100px 100px 100px 90px 90px 80px;
       padding: 12px 16px;
       border-bottom: 1px solid var(--border);
       align-items: center;
@@ -1153,7 +1153,7 @@
     /* Admin View with Checkboxes */
     .tasks-table.admin-view .table-header,
     .tasks-table.admin-view .table-row {
-      grid-template-columns: 40px 1fr 100px 100px 90px 90px 80px;
+      grid-template-columns: 40px 1fr 100px 100px 100px 90px 90px 80px;
     }
 
     .row-title {
@@ -2652,7 +2652,7 @@
         <div class="field-row">
           <div class="field">
             <label>Task Category</label>
-            <select id="f_category" onchange="handleCategoryChange(this.value)">
+            <select id="f_category">
               <option value="video">🎬 Video Edit</option>
               <option value="thumb">🎨 Thumbnail</option>
               <option value="graphics">✨ Special Graphics</option>
@@ -2661,24 +2661,13 @@
             </select>
           </div>
           <div class="field">
-            <label>Asset Checklist</label>
-            <div class="checklist-wrap">
-              <label class="checklist-item"><input type="checkbox" id="f_chk_1"> <span id="f_chk_label_1">Step
-                  1</span></label>
-              <label class="checklist-item"><input type="checkbox" id="f_chk_2"> <span id="f_chk_label_2">Step
-                  2</span></label>
-              <label class="checklist-item"><input type="checkbox" id="f_chk_3"> <span id="f_chk_label_3">Step
-                  3</span></label>
-            </div>
+            <label>Clip ID / Content Bank</label>
+            <input type="text" id="f_clipId" placeholder="e.g. VID-001" style="font-family:'DM Mono', monospace;" />
           </div>
         </div>
 
         <div class="field-row">
-          <div class="field">
-            <label>Clip ID / Content Bank</label>
-            <input type="text" id="f_clipId" placeholder="e.g. VID-001" style="font-family:'DM Mono', monospace;" />
-          </div>
-          <div class="field">
+          <div class="field" style="grid-column: span 2;">
             <label>Reference Link / URL</label>
             <input type="text" id="f_assetUrl" placeholder="e.g. https://..." />
           </div>
@@ -2712,10 +2701,23 @@
 
         <div class="field-row">
           <div class="field">
-            <label>Current Owner (Who is responsible?)</label>
-            <select id="f_assignee">
+            <label>Assigned By (Who assigned?)</label>
+            <select id="f_assignedBy">
               <!-- Populated dynamically via JS -->
             </select>
+          </div>
+          <div class="field">
+            <label>Assigned To (Who is responsible?)</label>
+            <select id="f_assignedTo">
+              <!-- Populated dynamically via JS -->
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Date of Creation</label>
+            <input type="date" id="f_createdAt" readonly style="opacity: 0.8; background: var(--s3); cursor: not-allowed;" />
           </div>
           <div class="field">
             <label>Due Date</label>
@@ -3233,13 +3235,11 @@
         clipId: document.getElementById('f_clipId').value.trim(),
         category: document.getElementById('f_category').value,
         assetUrl: document.getElementById('f_assetUrl').value.trim(),
-        chkScript: document.getElementById('f_chk_1').checked,
-        chkVideo: document.getElementById('f_chk_2').checked,
-        chkThumb: document.getElementById('f_chk_3').checked,
         description: document.getElementById('f_desc').value.trim(),
         status: document.getElementById('f_status').value,
         priority: document.getElementById('f_priority').value,
-        assignee: document.getElementById('f_assignee').value,
+        assignedBy: document.getElementById('f_assignedBy').value,
+        assignedTo: document.getElementById('f_assignedTo').value,
         due: document.getElementById('f_due').value,
         platform: 'YouTube'
       };
@@ -3250,6 +3250,7 @@
           .then(() => { showToast('Task updated ✓', 'success'); window.closeModal('taskModal'); })
           .catch(e => console.error(e));
       } else {
+        data.createdAt = new Date().toISOString();
         ref.add(data)
           .then(() => { showToast('Task created ✓', 'success'); window.closeModal('taskModal'); })
           .catch(e => console.error(e));
@@ -3382,24 +3383,24 @@
     // ═══════════════════════════════════════════
     window.openAddModal = function (status = 'ideation') {
       editingTaskId = null;
-      populateAssigneeDropdown();
+      populateAssigneeDropdowns();
       document.getElementById('modalTitle').textContent = 'New Task';
       document.getElementById('f_title').value = '';
       document.getElementById('f_clipId').value = '';
       document.getElementById('f_assetUrl').value = '';
-      document.getElementById('f_chk_1').checked = false;
-      document.getElementById('f_chk_2').checked = false;
-      document.getElementById('f_chk_3').checked = false;
       document.getElementById('f_desc').value = '';
       document.getElementById('f_status').value = status;
       document.getElementById('f_priority').value = 'medium';
       document.getElementById('f_due').value = '';
+      document.getElementById('f_createdAt').value = new Date().toISOString().split('T')[0];
 
       document.getElementById('f_category').value = 'video';
-      updateChecklistLabels('video');
 
       const me = getMember(currentUser.email);
-      if (me && me.name !== '?') document.getElementById('f_assignee').value = me.name;
+      if (me && me.name !== '?') {
+        document.getElementById('f_assignedBy').value = me.name;
+        document.getElementById('f_assignedTo').value = me.name;
+      }
 
       document.getElementById('deleteBtn').style.display = 'none'; document.getElementById('moveStatusField').style.display = 'none';
       document.getElementById('commentsSection').style.display = 'none';
@@ -3410,7 +3411,7 @@
       const t = tasks.find(t => t.id === id);
       if (!t) return;
       editingTaskId = id;
-      populateAssigneeDropdown();
+      populateAssigneeDropdowns();
       document.getElementById('modalTitle').textContent = 'Edit Task';
       document.getElementById('f_title').value = t.title || '';
       document.getElementById('f_clipId').value = t.clipId || '';
@@ -3418,16 +3419,15 @@
       document.getElementById('f_desc').value = t.description || '';
       document.getElementById('f_status').value = t.status || 'ideation';
       document.getElementById('f_priority').value = t.priority || 'medium';
-      document.getElementById('f_assignee').value = t.assignee || '';
+      document.getElementById('f_assignedBy').value = t.assignedBy || '';
+      document.getElementById('f_assignedTo').value = t.assignedTo || t.assignee || '';
       document.getElementById('f_due').value = t.due || '';
+      
+      const createdStr = t.createdAt ? t.createdAt.split('T')[0] : (t.due || new Date().toISOString().split('T')[0]);
+      document.getElementById('f_createdAt').value = createdStr;
 
       const category = t.category || 'video';
       document.getElementById('f_category').value = category;
-      updateChecklistLabels(category);
-
-      document.getElementById('f_chk_1').checked = t.chkScript || false;
-      document.getElementById('f_chk_2').checked = t.chkVideo || false;
-      document.getElementById('f_chk_3').checked = t.chkThumb || false;
 
       document.getElementById('deleteBtn').style.display = 'block';
       const moveField = document.getElementById('moveStatusField'), moveRow = document.getElementById('moveRow');
@@ -3461,7 +3461,11 @@
     }
     window.openTeamModal = function () { renderTeamList(); document.getElementById('tm_name').value = ''; document.getElementById('tm_email').value = ''; document.getElementById('teamModal').classList.add('open'); }
 
-    function populateAssigneeDropdown() { document.getElementById('f_assignee').innerHTML = teamMembers.map(m => `<option value="${m.name}">${m.name} (${m.role})</option>`).join(''); }
+    function populateAssigneeDropdowns() {
+      const optionsHtml = teamMembers.map(m => `<option value="${m.name}">${m.name} (${m.role})</option>`).join('');
+      document.getElementById('f_assignedBy').innerHTML = optionsHtml;
+      document.getElementById('f_assignedTo').innerHTML = optionsHtml;
+    }
 
     window.handleSearch = function () { searchQuery = document.getElementById('globalSearch').value.toLowerCase().trim(); renderAll(); }
     function getSearchedTasks() { if (!searchQuery) return tasks; return tasks.filter(t => (t.title && t.title.toLowerCase().includes(searchQuery)) || (t.clipId && t.clipId.toLowerCase().includes(searchQuery))); }
@@ -3543,21 +3547,11 @@
 
     function taskCard(t) {
       const isOverdue = t.due && new Date(t.due) < new Date(new Date().setHours(0, 0, 0, 0)) && t.status !== 'published';
-      const member = getMember(t.assignee), color = getMemberColor(member.role);
+      const assigneeName = t.assignedTo || t.assignee || '?';
+      const member = getMember(assigneeName), color = getMemberColor(member.role);
 
       const categoryKey = t.category || 'video';
       const cat = CATEGORY_MAP[categoryKey] || CATEGORY_MAP.video;
-
-      let checkHtml = '';
-      if (t.chkScript !== undefined) {
-        checkHtml = `
-          <div class="card-checklist">
-            <span class="chk-pill ${t.chkScript ? 'done' : ''}" title="${cat.checklist[0]}">${cat.shortChecklist[0]}</span>
-            <span class="chk-pill ${t.chkVideo ? 'done' : ''}" title="${cat.checklist[1]}">${cat.shortChecklist[1]}</span>
-            <span class="chk-pill ${t.chkThumb ? 'done' : ''}" title="${cat.checklist[2]}">${cat.shortChecklist[2]}</span>
-          </div>
-        `;
-      }
 
       let clipAndLinkHtml = '';
       if (t.clipId || t.assetUrl) {
@@ -3571,6 +3565,8 @@
         `;
       }
 
+      const assignedByStr = t.assignedBy ? ` (By ${t.assignedBy})` : '';
+
       return `
         <div class="card" onclick="openEditModal('${t.id}')" draggable="true" ondragstart="handleDragStart(event, '${t.id}')" ondragend="handleDragEnd(event)">
           <div class="card-platform">
@@ -3578,12 +3574,11 @@
             ${clipAndLinkHtml}
           </div>
           <div class="card-title">${esc(t.title)}</div>
-          ${checkHtml}
           <div class="card-footer">
             <div class="card-due ${isOverdue ? 'overdue' : ''}">${t.due ? '📅 ' + formatDate(t.due) : '—'}</div>
             ${t.commentCount ? `<div class="card-comments" style="display:flex; align-items:center; gap:4px; font-size:11px; color:var(--text3); margin-right:6px;" title="${t.commentCount} comments">💬 ${t.commentCount}</div>` : ''}
             <div class="priority-dot p-${t.priority || 'medium'}"></div>
-            <div class="card-assignee a-avatar" style="background:${color.bg}; color:${color.text}; border: 1px solid ${color.border};" title="Assigned to ${member.name}">${member.name[0]}</div>
+            <div class="card-assignee a-avatar" style="background:${color.bg}; color:${color.text}; border: 1px solid ${color.border};" title="Assigned to ${member.name}${assignedByStr}">${member.name[0]}</div>
           </div>
         </div>
       `;
@@ -3591,7 +3586,7 @@
 
     function renderTasksTable() {
       let displayTasks = getSearchedTasks();
-      if (taskFilter === 'mine') { const myProfile = getMember(currentUser.email); displayTasks = displayTasks.filter(t => t.assignee === myProfile.name); }
+      if (taskFilter === 'mine') { const myProfile = getMember(currentUser.email); displayTasks = displayTasks.filter(t => (t.assignedTo || t.assignee) === myProfile.name); }
       else if (taskFilter === 'overdue') { displayTasks = displayTasks.filter(t => t.due && new Date(t.due) < new Date(new Date().setHours(0, 0, 0, 0)) && t.status !== 'published'); }
       else if (taskFilter === 'video' || taskFilter === 'thumb' || taskFilter === 'graphics' || taskFilter === 'content' || taskFilter === 'social') { displayTasks = displayTasks.filter(t => (t.category || 'video') === taskFilter); }
       else if (taskFilter !== 'all') { displayTasks = displayTasks.filter(t => t.status === taskFilter); }
@@ -3611,7 +3606,8 @@
           ${isAdmin ? '<div><input type="checkbox" id="selectAllTasks" onclick="toggleSelectAllTasks(this)" style="cursor:pointer; accent-color:var(--accent);" /></div>' : ''}
           <div>Task</div>
           <div>Status</div>
-          <div>Current Owner</div>
+          <div>Assigned To</div>
+          <div>Assigned By</div>
           <div>Priority</div>
           <div>Due Date</div>
           <div>Clip ID</div>
@@ -3648,7 +3644,8 @@
               </div>
             </div>
             <div><span class="status-chip chip-${t.status}">${STAGES.find(s => s.id === t.status)?.label || t.status}</span></div>
-            <div class="row-cell">${t.assignee || '—'}</div>
+            <div class="row-cell">${t.assignedTo || t.assignee || '—'}</div>
+            <div class="row-cell">${t.assignedBy || '—'}</div>
             <div class="row-cell">${priorityLabel(t.priority)}</div>
             <div class="row-cell" style="${isOverdue ? 'color:var(--accent);font-weight:bold;' : ''}">${t.due ? formatDate(t.due) : '—'}</div>
             <div class="row-cell" style="font-family:'DM Mono', monospace;">${t.clipId || '—'}</div>
@@ -3691,10 +3688,14 @@
     }
 
     window.exportCSV = function () {
-      let csv = "Title,Clip ID,Status,Assignee,Priority,Due Date,Script Done,Video Done,Thumb Done\n";
-      tasks.forEach(t => { const safeTitle = `"${(t.title || '').replace(/"/g, '""')}"`; csv += `${safeTitle},${t.clipId || ''},${t.status},${t.assignee},${t.priority},${t.due || ''},${t.chkScript ? 'Yes' : 'No'},${t.chkVideo ? 'Yes' : 'No'},${t.chkThumb ? 'Yes' : 'No'}\n`; });
+      let csv = "Title,Clip ID,Status,Assigned To,Assigned By,Priority,Created Date,Due Date\n";
+      tasks.forEach(t => {
+        const safeTitle = `"${(t.title || '').replace(/"/g, '""')}"`;
+        const createdStr = t.createdAt ? t.createdAt.split('T')[0] : '';
+        csv += `${safeTitle},${t.clipId || ''},${t.status},${t.assignedTo || t.assignee || ''},${t.assignedBy || ''},${t.priority},${createdStr},${t.due || ''}\n`;
+      });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }), url = URL.createObjectURL(blob), link = document.createElement("a");
-      link.setAttribute("href", url); link.setAttribute("download", "ART_Content_Tasks.csv"); document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      link.setAttribute("href", url); link.setAttribute("download", "TORQ_Media_Tasks.csv"); document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 
     // ═══════════════════════════════════════════
